@@ -127,5 +127,3 @@ func touchFile(name string) error {
 	}
 	return file.Close()
 }
-
-////test
