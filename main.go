@@ -1,11 +1,13 @@
 package main
 
 import (
+	"bufio"
 	"encoding/json"
 	"fmt"
 	"log"
 	"net/http"
 	"os"
+	"strings"
 	"time"
 )
 
@@ -22,13 +24,15 @@ func main() {
 		appendFile("AUTH_CODE="+authCode+"\nECHOBEE_PIN="+echobeePin, authFile)
 	} else {
 		log.Println("Auth File exists")
+		loadAuthData()
 	}
 
 	//authCode = "lQNgAJsj76e94hDCc47tYLfr"
 	//echobeePin = "RHTQ-NGPP "
 
-	//fmt.Println("Application Key: " + apiKey)
-	//fmt.Println("Authorization Code is: " + authCode)
+	fmt.Println("Application Key: " + apiKey)
+	fmt.Println("Authorization Code is: " + authCode)
+	fmt.Println("Echoobe PIN: " + echobeePin)
 
 	///////getKey()
 	//getAuth()
@@ -126,4 +130,29 @@ func touchFile(name string) error {
 		return err
 	}
 	return file.Close()
+}
+
+func loadAuthData() {
+	var property string
+
+	file, err := os.Open(authFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		property = strings.Split(scanner.Text(), "=")[0]
+		if property == "AUTH_CODE" {
+			authCode = strings.Split(scanner.Text(), "=")[1]
+		} else if property == "ECHOBEE_PIN" {
+			echobeePin = strings.Split(scanner.Text(), "=")[1]
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
 }
