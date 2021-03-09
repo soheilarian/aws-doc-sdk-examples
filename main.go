@@ -18,24 +18,27 @@ var authCode string
 
 func main() {
 	fmt.Println("------------------------------")
+	fmt.Println("------------------------------")
+	fmt.Println("------------------------------")
+	fmt.Println("------------------------------")
+	fmt.Println("------------------------------")
+	fmt.Println("------------------------------")
+
 	if _, err := os.Stat(authFile); os.IsNotExist(err) {
 		log.Println("Could not retrive previus Auths. Auth file does not exist: " + authFile)
 		getKey()
-		appendFile("AUTH_CODE="+authCode+"\nECHOBEE_PIN="+echobeePin, authFile)
+		//appendFile("AUTH_CODE="+authCode+"\nECHOBEE_PIN="+echobeePin, authFile)
 	} else {
 		log.Println("Auth File exists")
 		loadAuthData()
 	}
-
-	//authCode = "lQNgAJsj76e94hDCc47tYLfr"
-	//echobeePin = "RHTQ-NGPP "
 
 	fmt.Println("Application Key: " + apiKey)
 	fmt.Println("Authorization Code is: " + authCode)
 	fmt.Println("Echoobe PIN: " + echobeePin)
 
 	///////getKey()
-	//getAuth()
+	getAuth()
 	///////authCode = pinObj.Code
 }
 func appendFile(text string, file string) {
@@ -101,6 +104,8 @@ func getKey() {
 
 	echobeePin = pinObj.EcobeePin
 	authCode = pinObj.Code
+	deleteFile(authFile)
+	appendFile("AUTH_CODE="+authCode+"\nECHOBEE_PIN="+echobeePin, authFile)
 }
 
 func getAuth() {
@@ -153,6 +158,13 @@ func loadAuthData() {
 	}
 
 	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+}
+
+func deleteFile(path string) {
+	err := os.Remove(path)
+	if err != nil {
 		log.Fatal(err)
 	}
 }
