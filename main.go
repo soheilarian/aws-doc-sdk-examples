@@ -7,14 +7,20 @@ import (
 	"log"
 	"net/http"
 	"os"
+	"os/user"
+	"runtime"
 	"strings"
 	"time"
 )
 
-var authFile string = "/Users/soheil/.echobeeAuth.txt"
-var apiKey string = "nIREGqvNiBOJoXYoOoMuvnKpe6EefVmO"
+var operationSystem string
 var echobeePin string
 var authCode string
+var homePath string
+var authFile string
+
+var authFileName string = ".echobeeAuth.txt"
+var apiKey string = "nIREGqvNiBOJoXYoOoMuvnKpe6EefVmO"
 
 func main() {
 	fmt.Println("------------------------------")
@@ -24,10 +30,20 @@ func main() {
 	fmt.Println("------------------------------")
 	fmt.Println("------------------------------")
 
+	setHomePath()
+	operationSystem = runtime.GOOS
+	log.Println("runtime.GOOS (operationSystem): " + operationSystem)
+	if operationSystem == "windows" {
+		fmt.Println("Hello from Windows")
+		authFile = homePath + "\\" + authFileName
+	} else {
+		fmt.Println("RUNTIME GOOS (runtime.GOOS) is not undrestood")
+		authFile = homePath + "/" + authFileName
+	}
+
 	if _, err := os.Stat(authFile); os.IsNotExist(err) {
 		log.Println("Could not retrive previus Auths. Auth file does not exist: " + authFile)
 		getKey()
-		//appendFile("AUTH_CODE="+authCode+"\nECHOBEE_PIN="+echobeePin, authFile)
 	} else {
 		log.Println("Auth File exists")
 		loadAuthData()
@@ -37,7 +53,6 @@ func main() {
 	fmt.Println("Authorization Code is: " + authCode)
 	fmt.Println("Echoobe PIN: " + echobeePin)
 
-	///////getKey()
 	getAuth()
 	///////authCode = pinObj.Code
 }
@@ -104,7 +119,7 @@ func getKey() {
 
 	echobeePin = pinObj.EcobeePin
 	authCode = pinObj.Code
-	deleteFile(authFile)
+	//deleteFile(authFile)
 	appendFile("AUTH_CODE="+authCode+"\nECHOBEE_PIN="+echobeePin, authFile)
 }
 
@@ -127,6 +142,13 @@ func getAuth() {
 		fmt.Println("Auth Error: " + authObj.Error)
 		fmt.Println("Auth Error Description: " + authObj.Error_description)
 		fmt.Println("Auth Error URL: " + authObj.Error_uri)
+
+		if authObj.Error == "authorization_pending" {
+			fmt.Println("-------------------------------------------")
+			fmt.Println("- Please authorize echobee to use the app -")
+			fmt.Println("- Please login to  -")
+			fmt.Println("-------------------------------------------")
+		}
 	}
 }
 func touchFile(name string) error {
@@ -165,6 +187,14 @@ func loadAuthData() {
 func deleteFile(path string) {
 	err := os.Remove(path)
 	if err != nil {
+		log.Println(err)
+	}
+}
+
+func setHomePath() {
+	usr, err := user.Current()
+	if err != nil {
 		log.Fatal(err)
 	}
+	homePath = usr.HomeDir
 }
