@@ -145,8 +145,9 @@ func getAuth() {
 
 		if authObj.Error == "authorization_pending" {
 			fmt.Println("-------------------------------------------")
-			fmt.Println("- Please authorize echobee to use the app -")
-			fmt.Println("- Please login to  -")
+			fmt.Println("- Please authorize echobee to use the app")
+			fmt.Println("- Please login to: https://www.ecobee.com/consumerportal/index.html#/my-apps/add/newv")
+			fmt.Println("- with code: " + echobeePin)
 			fmt.Println("-------------------------------------------")
 		}
 	}
