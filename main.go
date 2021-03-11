@@ -28,7 +28,7 @@ func main() {
 	fmt.Println("------------------------------")
 	fmt.Println("------------------------------")
 	fmt.Println("------------------------------")
-	fmt.Println("------------------------------")
+	fmt.Println("------------------------------=s")
 
 	setHomePath()
 	operationSystem = runtime.GOOS
