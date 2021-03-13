@@ -15,6 +15,8 @@ import (
 )
 
 const authFileName string = ".echobeeAuth.txt"
+
+//const tokenFileName string = ".ecobeeToken.txt"
 const apiKey string = "nIREGqvNiBOJoXYoOoMuvnKpe6EefVmO"
 const AUTH_URL string = "https://api.ecobee.com/token"
 
@@ -36,12 +38,15 @@ func main() {
 	setHomePath()
 	operationSystem = runtime.GOOS
 	log.Println("Runtime Operation System: " + operationSystem)
-	if operationSystem == "windows" {
+	if operationSystem == "windows" { // WINDOWS
 		fmt.Println("Hello from Windows")
 		authFile = homePath + "\\" + authFileName
-	} else {
-		fmt.Println("RUNTIME GOOS (runtime.GOOS) is not undrestood")
+	} else if operationSystem == "darwin" { //MAC
+		fmt.Println("Hello from Mac")
 		authFile = homePath + "/" + authFileName
+	} else {
+		log.Fatalln("RUNTIME GOOS (runtime.GOOS) is not undrestood")
+		os.Exit(0)
 	}
 
 	if _, err := os.Stat(authFile); os.IsNotExist(err) {
@@ -52,11 +57,11 @@ func main() {
 		loadAuthData()
 	}
 
-	fmt.Println("------------------------------")
-	fmt.Println("Application Key: " + apiKey)
-	fmt.Println("Authorization Code is: " + authCode)
-	fmt.Println("Echoobe PIN: " + echobeePin)
-	fmt.Println("------------------------------")
+	//fmt.Println("------------------------------")
+	//fmt.Println("Application Key: " + apiKey)
+	//fmt.Println("Authorization Code is: " + authCode)
+	//fmt.Println("Echoobe PIN: " + echobeePin)
+	//fmt.Println("------------------------------")
 
 	auth()
 	os.Exit(0)
@@ -74,7 +79,7 @@ func auth() {
 	}
 
 	authData := postReq(AUTH_URL, data)
-
+	fmt.Println("AAA", authData)
 	if authData["error"] != nil {
 		log.Println("Error: " + authData["error"].(string))
 		log.Println("Error Description: " + authData["error_description"].(string))
@@ -87,7 +92,7 @@ func auth() {
 		} else if authData["error"] == "authorization_pending" {
 			fmt.Println("- Please authorize echobee to use the app")
 			fmt.Println("- Please login to https://www.ecobee.com")
-			fmt.Println("- Navigate to: MyApps --> Add Application")
+			fmt.Println("- Navigate to: MyApps --> Add Apps")
 			fmt.Println("- Enter the code: " + echobeePin)
 			fmt.Println("- Press Validate")
 			//fmt.Println("- Please login to: https://www.ecobee.com/consumerportal/index.html#/my-apps/add/newv")
@@ -159,8 +164,9 @@ func getKey() {
 
 	echobeePin = pinObj.EcobeePin
 	authCode = pinObj.Code
-	//deleteFile(authFile)
+	deleteFile(authFile)
 	appendFile("AUTH_CODE="+authCode+"\nECHOBEE_PIN="+echobeePin, authFile)
+	printAuthValues()
 }
 
 func touchFile(name string) error {
@@ -194,6 +200,7 @@ func loadAuthData() {
 	if err := scanner.Err(); err != nil {
 		log.Fatal(err)
 	}
+	printAuthValues()
 }
 
 func deleteFile(path string) {
@@ -209,4 +216,12 @@ func setHomePath() {
 		log.Fatal(err)
 	}
 	homePath = usr.HomeDir
+}
+
+func printAuthValues() {
+	fmt.Println("------------------------------")
+	fmt.Println("Application Key: " + apiKey)
+	fmt.Println("Authorization Code is: " + authCode)
+	fmt.Println("Echoobe PIN: " + echobeePin)
+	fmt.Println("------------------------------")
 }
