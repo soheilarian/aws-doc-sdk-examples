@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"net/http"
+	"net/url"
 	"os"
 	"os/user"
 	"runtime"
@@ -13,14 +14,15 @@ import (
 	"time"
 )
 
+const authFileName string = ".echobeeAuth.txt"
+const apiKey string = "nIREGqvNiBOJoXYoOoMuvnKpe6EefVmO"
+const AUTH_URL string = "https://api.ecobee.com/token"
+
 var operationSystem string
 var echobeePin string
 var authCode string
 var homePath string
 var authFile string
-
-var authFileName string = ".echobeeAuth.txt"
-var apiKey string = "nIREGqvNiBOJoXYoOoMuvnKpe6EefVmO"
 
 func main() {
 	fmt.Println("------------------------------")
@@ -28,11 +30,12 @@ func main() {
 	fmt.Println("------------------------------")
 	fmt.Println("------------------------------")
 	fmt.Println("------------------------------")
-	fmt.Println("------------------------------=s")
+	fmt.Println("------------------------------")
+	log.Println("Starting Zone Split")
 
 	setHomePath()
 	operationSystem = runtime.GOOS
-	log.Println("runtime.GOOS (operationSystem): " + operationSystem)
+	log.Println("Runtime Operation System: " + operationSystem)
 	if operationSystem == "windows" {
 		fmt.Println("Hello from Windows")
 		authFile = homePath + "\\" + authFileName
@@ -49,13 +52,66 @@ func main() {
 		loadAuthData()
 	}
 
+	fmt.Println("------------------------------")
 	fmt.Println("Application Key: " + apiKey)
 	fmt.Println("Authorization Code is: " + authCode)
 	fmt.Println("Echoobe PIN: " + echobeePin)
+	fmt.Println("------------------------------")
 
-	getAuth()
-	///////authCode = pinObj.Code
+	auth()
+	os.Exit(0)
+
+	//getAuth()
+
 }
+
+func auth() {
+	fmt.Println("Getting the Auth")
+	data := url.Values{
+		"grant_type": {"ecobeePin"},
+		"code":       {authCode},
+		"client_id":  {apiKey},
+	}
+
+	authData := postReq(AUTH_URL, data)
+
+	if authData["error"] != nil {
+		log.Println("Error: " + authData["error"].(string))
+		log.Println("Error Description: " + authData["error_description"].(string))
+		log.Println("Error uri: " + authData["error_uri"].(string))
+
+		if authData["error"] == "invalid_grant" {
+			log.Println("The Key has expiered. Refereshing the key...")
+			deleteFile(authFile)
+			getKey()
+		} else if authData["error"] == "authorization_pending" {
+			fmt.Println("- Please authorize echobee to use the app")
+			fmt.Println("- Please login to https://www.ecobee.com")
+			fmt.Println("- Navigate to: MyApps --> Add Application")
+			fmt.Println("- Enter the code: " + echobeePin)
+			fmt.Println("- Press Validate")
+			//fmt.Println("- Please login to: https://www.ecobee.com/consumerportal/index.html#/my-apps/add/newv")
+		}
+	}
+
+}
+
+func postReq(url string, data map[string][]string) map[string]interface{} {
+	resp, err := http.PostForm("https://api.ecobee.com/token", data)
+
+	if err != nil {
+		log.Fatal(err)
+	}
+
+	var res map[string]interface{}
+
+	json.NewDecoder(resp.Body).Decode(&res)
+
+	fmt.Println(res["error"])
+	fmt.Println(res["error_description"])
+	return res
+}
+
 func appendFile(text string, file string) {
 	if _, err := os.Stat(file); os.IsNotExist(err) {
 		touchFile(file)
@@ -80,28 +136,12 @@ func getJson(url string, target interface{}) error {
 	return json.NewDecoder(r.Body).Decode(target)
 }
 
-//func postJson(url string, target interface{}) error {
-//http.Post()
-//r, err := myClient.Post(url,"dd",)
-//if err != nil {
-//	return err
-//}
-//defer r.Body.Close()
-//return json.NewDecoder(r.Body).Decode(target)
-//}
-
 type PinObj struct {
 	EcobeePin  string
 	Code       string
 	Interval   int
 	Expires_in int
 	Scope      string
-}
-
-type AuthObj struct {
-	Error             string
-	Error_description string
-	Error_uri         string
 }
 
 func getKey() {
@@ -123,35 +163,6 @@ func getKey() {
 	appendFile("AUTH_CODE="+authCode+"\nECHOBEE_PIN="+echobeePin, authFile)
 }
 
-func getAuth() {
-	fmt.Println("Getting the Auth")
-
-	var data = "grant_type=ecobeePin&code=" + authCode + "&client_id=" + apiKey
-	url := "https://api.ecobee.com/token?" + data
-	fmt.Println("URL: " + url)
-
-	authObj := new(AuthObj)
-	getJson(url, authObj)
-
-	//Proper error catching
-	if authObj.Error == "" {
-		fmt.Println("Invalid Auth Call: " + url)
-		getKey()
-	} else {
-		//invalid_grant
-		fmt.Println("Auth Error: " + authObj.Error)
-		fmt.Println("Auth Error Description: " + authObj.Error_description)
-		fmt.Println("Auth Error URL: " + authObj.Error_uri)
-
-		if authObj.Error == "authorization_pending" {
-			fmt.Println("-------------------------------------------")
-			fmt.Println("- Please authorize echobee to use the app")
-			fmt.Println("- Please login to: https://www.ecobee.com/consumerportal/index.html#/my-apps/add/newv")
-			fmt.Println("- with code: " + echobeePin)
-			fmt.Println("-------------------------------------------")
-		}
-	}
-}
 func touchFile(name string) error {
 	file, err := os.OpenFile(name, os.O_RDONLY|os.O_CREATE, 0644)
 	if err != nil {
