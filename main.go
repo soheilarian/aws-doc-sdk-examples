@@ -14,14 +14,14 @@ import (
 	"strings"
 )
 
-const authFileName string = ".echobeeAuth.txt"
+const authFileName string = ".ecobeeAuth.txt"
 const tokenFileName string = ".ecobeeToken.txt"
 const apiKey string = "nIREGqvNiBOJoXYoOoMuvnKpe6EefVmO"
 const AUTH_URL string = "https://api.ecobee.com/token"
 
 var folderSeperator string
 var operationSystem string
-var echobeePin string
+var ecobeePin string
 var authCode string
 var accessToken string
 var refreshToken string
@@ -81,10 +81,10 @@ func getToken() {
 			deleteFile(authFile)
 
 		} else if authData["error"] == "authorization_pending" {
-			fmt.Println("- Please authorize echobee to use the app")
+			fmt.Println("- Please authorize ecobee to use the app")
 			fmt.Println("- Please login to https://www.ecobee.com")
 			fmt.Println("- Navigate to: MyApps --> Add Apps")
-			fmt.Println("- Enter the code: " + echobeePin)
+			fmt.Println("- Enter the code: " + ecobeePin)
 			fmt.Println("- Click Validate")
 			//fmt.Println("- Please login to: https://www.ecobee.com/consumerportal/index.html#/my-apps/add/newv")
 		}
@@ -129,12 +129,12 @@ func writeFile(text string, file string) {
 		touchFile(file)
 	}
 
-	f, err := os.OpenFile(authFile, os.O_APPEND|os.O_WRONLY, 0600)
+	f, err := os.OpenFile(text, os.O_APPEND|os.O_WRONLY, 0600)
 	if err != nil {
 		panic(err)
 	}
 	defer f.Close()
-	fmt.Fprintln(f, text)
+	//fmt.Fprintln(f, text)
 }
 
 func deleteFile(path string) {
@@ -170,16 +170,16 @@ func getAuth() {
 	authObj := new(AuthObj)
 	getJson(pinUrl, authObj)
 
-	//fmt.Println("Echobee PIN: " + pinObj.EcobeePin)
+	//fmt.Println("ecobee PIN: " + pinObj.EcobeePin)
 	//fmt.Println("Ecobee Auth Code: " + pinObj.Code)
 	//fmt.Println(fmt.Sprint("Ecobee Exipery Inteval: ", pinObj.Interval))
-	//fmt.Println(fmt.Sprint("Echobee Expiery in Sec: ", pinObj.Expires_in))
+	//fmt.Println(fmt.Sprint("Ecobee Expiery in Sec: ", pinObj.Expires_in))
 	//fmt.Println("Call Scope" + pinObj.Scope)
-
-	echobeePin = authObj.EcobeePin
+	log.Fatalln("HERE")
+	ecobeePin = authObj.EcobeePin
 	authCode = authObj.Code
 	deleteFile(authFile)
-	writeFile("AUTH_CODE="+authCode+"\nECHOBEE_PIN="+echobeePin, authFile)
+	writeFile("AUTH_CODE="+authCode+"\nECOBEE_PIN="+ecobeePin, authFile)
 }
 
 func touchFile(name string) error {
@@ -206,8 +206,8 @@ func loadAuthFile() {
 		property = strings.Split(scanner.Text(), "=")[0]
 		if property == "AUTH_CODE" {
 			authCode = strings.Split(scanner.Text(), "=")[1]
-		} else if property == "ECHOBEE_PIN" {
-			echobeePin = strings.Split(scanner.Text(), "=")[1]
+		} else if property == "ECOBEE_PIN" {
+			ecobeePin = strings.Split(scanner.Text(), "=")[1]
 		}
 	}
 
@@ -289,7 +289,7 @@ func printAuthValues() {
 	fmt.Println("------------------------------")
 	fmt.Println("Application Key: " + apiKey)
 	fmt.Println("Authorization Code is: " + authCode)
-	fmt.Println("Echoobe PIN: " + echobeePin)
+	fmt.Println("Ecoobe PIN: " + ecobeePin)
 	fmt.Println("ACCESS TOKEN: " + accessToken)
 	fmt.Println("REFRESH TOKEN: " + refreshToken)
 	fmt.Println("------------------------------")
