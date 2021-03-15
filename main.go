@@ -216,6 +216,32 @@ func loadAuthFile() {
 	}
 }
 
+func loadTokenFile() {
+	log.Println("Loading the Token file")
+	var property string
+
+	file, err := os.Open(tokenFile)
+	if err != nil {
+		log.Fatal(err)
+	}
+	defer file.Close()
+
+	scanner := bufio.NewScanner(file)
+
+	for scanner.Scan() {
+		property = strings.Split(scanner.Text(), "=")[0]
+		if property == "ACCESS_TOKEN" {
+			accessToken = strings.Split(scanner.Text(), "=")[1]
+		} else if property == "REFRESH_TOKEN" {
+			refreshToken = strings.Split(scanner.Text(), "=")[1]
+		}
+	}
+
+	if err := scanner.Err(); err != nil {
+		log.Fatal(err)
+	}
+}
+
 func initilize() {
 	usr, err := user.Current()
 	if err != nil {
