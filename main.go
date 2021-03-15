@@ -23,6 +23,8 @@ var folderSeperator string
 var operationSystem string
 var echobeePin string
 var authCode string
+var accessToken string
+var refreshToken string
 var homePath string
 var authFile string
 var tokenFile string
@@ -58,11 +60,10 @@ func getToken() {
 		"code":       {authCode},
 		"client_id":  {apiKey},
 	}
-	//return json.NewDecoder(r.Body).Decode(target)
 
 	authData := postReq(AUTH_URL, data)
 	fmt.Println("AAA", authData)
-	return
+	fmt.Println("AAA", authData["error"])
 
 	if authData["error"] != nil {
 		log.Println("Error: " + authData["error"].(string))
@@ -70,19 +71,27 @@ func getToken() {
 		log.Println("Error uri: " + authData["error_uri"].(string))
 
 		if authData["error"] == "invalid_grant" {
-			log.Println("The Key has expiered. Refereshing the key...")
+			//This is the case that app is registered but token is lost. we need to start over
+			log.Println("The Key has expiered. Whta to do?")
 			deleteFile(authFile)
-			getAuth()
+			//getAuth()
+
+		} else if authData["error"] == "invalid_client" {
+			log.Println("the token and app wont match")
+			deleteFile(authFile)
+
 		} else if authData["error"] == "authorization_pending" {
 			fmt.Println("- Please authorize echobee to use the app")
 			fmt.Println("- Please login to https://www.ecobee.com")
 			fmt.Println("- Navigate to: MyApps --> Add Apps")
 			fmt.Println("- Enter the code: " + echobeePin)
-			fmt.Println("- Press Validate")
+			fmt.Println("- Click Validate")
 			//fmt.Println("- Please login to: https://www.ecobee.com/consumerportal/index.html#/my-apps/add/newv")
-		} else {
-			fmt.Println("AAA", authData)
 		}
+	} else {
+		accessToken = authData["access_token"].(string)
+		refreshToken = authData["refresh_token"].(string)
+		writeFile("ACCESS_TOKEN="+accessToken+"\nREFRESH_TOKEN="+refreshToken, tokenFile)
 	}
 }
 
@@ -110,21 +119,8 @@ func postReq(url string, data map[string][]string) map[string]interface{} {
 	if err != nil {
 		log.Fatal(err)
 	}
-
 	var res map[string]interface{}
-
 	json.NewDecoder(resp.Body).Decode(&res)
-
-	//fmt.Println(res["error"])
-	//fmt.Println(res["error_description"])
-	tokenObj := new(TokenObj)
-	json.NewDecoder(resp.Body).Decode(tokenObj)
-	log.Print("========================")
-	log.Println(tokenObj.Error)
-	//authObj := new(AuthObj)
-	//getJson(pinUrl, authObj)
-	log.Print("========================")
-
 	return res
 }
 
@@ -184,7 +180,6 @@ func getAuth() {
 	authCode = authObj.Code
 	deleteFile(authFile)
 	writeFile("AUTH_CODE="+authCode+"\nECHOBEE_PIN="+echobeePin, authFile)
-	printAuthValues()
 }
 
 func touchFile(name string) error {
@@ -269,6 +264,8 @@ func printAuthValues() {
 	fmt.Println("Application Key: " + apiKey)
 	fmt.Println("Authorization Code is: " + authCode)
 	fmt.Println("Echoobe PIN: " + echobeePin)
+	fmt.Println("ACCESS TOKEN: " + accessToken)
+	fmt.Println("REFRESH TOKEN: " + refreshToken)
 	fmt.Println("------------------------------")
 }
 
