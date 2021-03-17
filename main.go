@@ -39,18 +39,50 @@ func main() {
 	log.Println("Starting Zone Split")
 
 	initilize()
+	//os.Exit(0)
+}
 
-	os.Exit(0)
-	if _, err := os.Stat(authFile); os.IsNotExist(err) {
-		//get info to prapare for registration
-		log.Println("Could not retrive previus Auths. Auth file does not exist: " + authFile)
-		getAuth()
-	} else {
-		log.Println("Auth File exists")
-		loadAuthFile()
+func refreshAccessToken() {
+	fmt.Println("Refreshing the Token")
+	log.Fatal("FIX THIS.....")
+	data := url.Values{
+		"grant_type": {"ecobeePin"},
+		"code":       {authCode},
+		"client_id":  {apiKey},
 	}
 
-	os.Exit(0)
+	authData := postReq(AUTH_URL, data)
+	fmt.Println("AAA", authData)
+	fmt.Println("AAA", authData["error"])
+
+	if authData["error"] != nil {
+		log.Println("Error: " + authData["error"].(string))
+		log.Println("Error Description: " + authData["error_description"].(string))
+		log.Println("Error uri: " + authData["error_uri"].(string))
+
+		if authData["error"] == "invalid_grant" {
+			//This is the case that app is registered but token is lost. we need to start over
+			log.Println("The Key has expiered. Whta to do?")
+			deleteFile(authFile)
+			//getAuth()
+
+		} else if authData["error"] == "invalid_client" {
+			log.Println("the token and app wont match")
+			deleteFile(authFile)
+
+		} else if authData["error"] == "authorization_pending" {
+			fmt.Println("- Please authorize ecobee to use the app")
+			fmt.Println("- Please login to https://www.ecobee.com")
+			fmt.Println("- Navigate to: MyApps --> Add Apps")
+			fmt.Println("- Enter the code: " + ecobeePin)
+			fmt.Println("- Click Validate")
+			//fmt.Println("- Please login to: https://www.ecobee.com/consumerportal/index.html#/my-apps/add/newv")
+		}
+	} else {
+		accessToken = authData["access_token"].(string)
+		refreshToken = authData["refresh_token"].(string)
+		writeFile(tokenFile, "ACCESS_TOKEN="+accessToken+"\nREFRESH_TOKEN="+refreshToken)
+	}
 }
 
 func getToken() {
@@ -91,7 +123,7 @@ func getToken() {
 	} else {
 		accessToken = authData["access_token"].(string)
 		refreshToken = authData["refresh_token"].(string)
-		writeFile("ACCESS_TOKEN="+accessToken+"\nREFRESH_TOKEN="+refreshToken, tokenFile)
+		writeFile(tokenFile, "ACCESS_TOKEN="+accessToken+"\nREFRESH_TOKEN="+refreshToken)
 	}
 }
 
@@ -124,17 +156,15 @@ func postReq(url string, data map[string][]string) map[string]interface{} {
 	return res
 }
 
-func writeFile(text string, file string) {
-	if _, err := os.Stat(file); os.IsNotExist(err) {
-		touchFile(file)
-	}
-
-	f, err := os.OpenFile(text, os.O_APPEND|os.O_WRONLY, 0600)
+func writeFile(path string, text string) {
+	f, err := os.OpenFile(path, os.O_APPEND|os.O_CREATE|os.O_WRONLY, 0644)
 	if err != nil {
-		panic(err)
+		log.Println(err)
 	}
 	defer f.Close()
-	//fmt.Fprintln(f, text)
+	if _, err := f.WriteString(text); err != nil {
+		log.Println(err)
+	}
 }
 
 func deleteFile(path string) {
@@ -170,16 +200,15 @@ func getAuth() {
 	authObj := new(AuthObj)
 	getJson(pinUrl, authObj)
 
-	//fmt.Println("ecobee PIN: " + pinObj.EcobeePin)
-	//fmt.Println("Ecobee Auth Code: " + pinObj.Code)
+	fmt.Println("ecobee PIN: " + authObj.EcobeePin)
+	fmt.Println("Ecobee Auth Code: " + authObj.Code)
 	//fmt.Println(fmt.Sprint("Ecobee Exipery Inteval: ", pinObj.Interval))
 	//fmt.Println(fmt.Sprint("Ecobee Expiery in Sec: ", pinObj.Expires_in))
 	//fmt.Println("Call Scope" + pinObj.Scope)
-	log.Fatalln("HERE")
 	ecobeePin = authObj.EcobeePin
 	authCode = authObj.Code
-	deleteFile(authFile)
-	writeFile("AUTH_CODE="+authCode+"\nECOBEE_PIN="+ecobeePin, authFile)
+	//deleteFile(authFile)
+	writeFile(authFile, "AUTH_CODE="+authCode+"\nECOBEE_PIN="+ecobeePin)
 }
 
 func touchFile(name string) error {
@@ -243,6 +272,37 @@ func loadTokenFile() {
 }
 
 func initilize() {
+	setHomePath()
+
+	setupAuth()
+	setupToken()
+
+	printAuthValues()
+
+	//Load Auth File: to be changed with DB items
+	//loadAuthData()
+}
+
+func setupAuth() {
+	if _, err := os.Stat(authFile); os.IsNotExist(err) {
+		log.Println("Auth File does not exist it should be created.")
+		getAuth()
+	} else {
+		loadAuthFile()
+	}
+}
+
+func setupToken() {
+	if _, err := os.Stat(tokenFile); os.IsNotExist(err) {
+		log.Println("Token File does not exist it should be created.")
+		getToken()
+	} else {
+		log.Println("TODO: process the token file")
+		loadTokenFile()
+	}
+}
+
+func setHomePath() {
 	usr, err := user.Current()
 	if err != nil {
 		log.Fatal(err)
@@ -264,25 +324,6 @@ func initilize() {
 		log.Fatalln("RUNTIME GOOS (runtime.GOOS) is not undrestood")
 		os.Exit(0)
 	}
-
-	//Load Token and auth Files. Loop till all is ready
-	if _, err := os.Stat(authFile); os.IsNotExist(err) {
-		log.Println("Auth File does not exist it should be created.")
-		getAuth()
-	} else {
-		loadAuthFile()
-	}
-
-	if _, err := os.Stat(tokenFile); os.IsNotExist(err) {
-		log.Println("Token File does not exist it should be created.")
-		getToken()
-	} else {
-		log.Println("TODO: process the token file")
-	}
-	printAuthValues()
-
-	//Load Auth File: to be changed with DB items
-	//loadAuthData()
 }
 
 func printAuthValues() {
