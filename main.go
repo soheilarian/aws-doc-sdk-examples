@@ -43,17 +43,29 @@ func main() {
 }
 
 func refreshAccessToken() {
-	fmt.Println("Refreshing the Token")
-	log.Fatal("FIX THIS.....")
+	log.Println("Refreshing the Token")
+
+	/*
+			apiKey = $('#apiKey').val();
+		refreshToken = $('#refreshToken').val();
+
+		var url = "https://api.ecobee.com/token";
+		var data = "grant_type=refresh_token&code=".concat(refreshToken).concat("&client_id=").concat(apiKey);
+
+		$.post(url, data, function(resp) {
+		    var response = JSON.stringify(resp, null, 4);
+		      $('#refreshTokenResponse').html(response);
+		}, 'json');
+	*/
 	data := url.Values{
-		"grant_type": {"ecobeePin"},
-		"code":       {authCode},
+		"grant_type": {"refresh_token"},
+		"code":       {refreshToken},
 		"client_id":  {apiKey},
 	}
 
 	authData := postReq(AUTH_URL, data)
 	fmt.Println("AAA", authData)
-	fmt.Println("AAA", authData["error"])
+	os.Exit(0)
 
 	if authData["error"] != nil {
 		log.Println("Error: " + authData["error"].(string))
@@ -62,25 +74,11 @@ func refreshAccessToken() {
 
 		if authData["error"] == "invalid_grant" {
 			//This is the case that app is registered but token is lost. we need to start over
-			log.Println("The Key has expiered. Whta to do?")
-			deleteFile(authFile)
-			//getAuth()
-
-		} else if authData["error"] == "invalid_client" {
-			log.Println("the token and app wont match")
-			deleteFile(authFile)
-
-		} else if authData["error"] == "authorization_pending" {
-			fmt.Println("- Please authorize ecobee to use the app")
-			fmt.Println("- Please login to https://www.ecobee.com")
-			fmt.Println("- Navigate to: MyApps --> Add Apps")
-			fmt.Println("- Enter the code: " + ecobeePin)
-			fmt.Println("- Click Validate")
-			//fmt.Println("- Please login to: https://www.ecobee.com/consumerportal/index.html#/my-apps/add/newv")
+			log.Println("The Key has expiered. or the value passed are wrong")
 		}
 	} else {
 		accessToken = authData["access_token"].(string)
-		refreshToken = authData["refresh_token"].(string)
+		deleteFile(tokenFile)
 		writeFile(tokenFile, "ACCESS_TOKEN="+accessToken+"\nREFRESH_TOKEN="+refreshToken)
 	}
 }
@@ -276,7 +274,7 @@ func initilize() {
 
 	setupAuth()
 	setupToken()
-
+	refreshAccessToken()
 	printAuthValues()
 
 	//Load Auth File: to be changed with DB items
