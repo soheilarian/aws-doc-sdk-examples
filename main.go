@@ -39,24 +39,35 @@ func main() {
 	log.Println("Starting Zone Split")
 
 	initilize()
-	//os.Exit(0)
+
+	req, err := http.NewRequest("GET", "https://api.ecobee.com/1/thermostat?format=json&body={\"selection\":{\"selectionType\":\"registered\",\"selectionMatch\":\"\",\"includeRuntime\":true,\"includeSensors\":true}}", nil)
+	if err != nil {
+		// handle err
+	}
+	bearer := "Bearer " + accessToken
+
+	req.Header.Add("Content-Type", "text/json")
+	//req.Header.Set("Authorization", fmt.Sprintf("Bearer %s", accessToken))
+	req.Header.Add("Authorization", bearer)
+
+	// Send req using http Client
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Error on response.\n[ERROR] -", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error while reading the response bytes:", err)
+	}
+	log.Println(string([]byte(body)))
 }
 
 func refreshAccessToken() {
 	log.Println("Refreshing the Token")
 
-	/*
-			apiKey = $('#apiKey').val();
-		refreshToken = $('#refreshToken').val();
-
-		var url = "https://api.ecobee.com/token";
-		var data = "grant_type=refresh_token&code=".concat(refreshToken).concat("&client_id=").concat(apiKey);
-
-		$.post(url, data, function(resp) {
-		    var response = JSON.stringify(resp, null, 4);
-		      $('#refreshTokenResponse').html(response);
-		}, 'json');
-	*/
 	data := url.Values{
 		"grant_type": {"refresh_token"},
 		"code":       {refreshToken},
@@ -64,8 +75,7 @@ func refreshAccessToken() {
 	}
 
 	authData := postReq(AUTH_URL, data)
-	fmt.Println("AAA", authData)
-	os.Exit(0)
+	//fmt.Println("fullpayload", authData)
 
 	if authData["error"] != nil {
 		log.Println("Error: " + authData["error"].(string))
@@ -205,7 +215,6 @@ func getAuth() {
 	//fmt.Println("Call Scope" + pinObj.Scope)
 	ecobeePin = authObj.EcobeePin
 	authCode = authObj.Code
-	//deleteFile(authFile)
 	writeFile(authFile, "AUTH_CODE="+authCode+"\nECOBEE_PIN="+ecobeePin)
 }
 
@@ -277,8 +286,6 @@ func initilize() {
 	refreshAccessToken()
 	printAuthValues()
 
-	//Load Auth File: to be changed with DB items
-	//loadAuthData()
 }
 
 func setupAuth() {
