@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/user"
+	"reflect"
 	"runtime"
 	"strings"
 )
@@ -63,6 +64,24 @@ func main() {
 		log.Println("Error while reading the response bytes:", err)
 	}
 	log.Println(string([]byte(body)))
+	log.Println("------------------------")
+	//log.Println(string([]byte(body."page")))
+	getFieldName("thermostatList")
+}
+
+func getFieldName(tag, key string, s interface{}) (fieldname string) {
+	rt := reflect.TypeOf(s)
+	if rt.Kind() != reflect.Struct {
+		panic("bad type")
+	}
+	for i := 0; i < rt.NumField(); i++ {
+		f := rt.Field(i)
+		v := strings.Split(f.Tag.Get(key), ",")[0] // use split to ignore tag "options" like omitempty, etc.
+		if v == tag {
+			return f.Name
+		}
+	}
+	return ""
 }
 
 func refreshAccessToken() {
