@@ -1,0 +1,182 @@
+2021/03/17 23:07:54 {
+    "page": {
+      "page": 1,
+      "totalPages": 1,
+      "pageSize": 2,
+      "total": 2
+    },
+    "thermostatList": [
+      {
+        "identifier": "311053969180",
+        "name": "Upstairs",
+        "thermostatRev": "210317220049",
+        "isRegistered": true,
+        "modelNumber": "athenaSmart",
+        "brand": "ecobee",
+        "features": "Home,HomeKit",
+        "lastModified": "2021-03-17 22:00:49",
+        "thermostatTime": "2021-03-17 23:07:56",
+        "utcTime": "2021-03-18 03:07:56",
+        "runtime": {
+          "runtimeRev": "210318030532",
+          "connected": true,
+          "firstConnected": "2017-01-09 19:25:50",
+          "connectDateTime": "2021-03-14 07:02:22",
+          "disconnectDateTime": "2021-03-02 11:17:55",
+          "lastModified": "2021-03-18 03:05:32",
+          "lastStatusModified": "2021-03-18 03:05:32",
+          "runtimeDate": "2021-03-18",
+          "runtimeInterval": 34,
+          "actualTemperature": 725,
+          "actualHumidity": 35,
+          "rawTemperature": 725,
+          "showIconMode": 0,
+          "desiredHeat": 730,
+          "desiredCool": 770,
+          "desiredHumidity": 36,
+          "desiredDehumidity": 60,
+          "desiredFanMode": "auto",
+          "desiredHeatRange": [
+            450,
+            790
+          ],
+          "desiredCoolRange": [
+            650,
+            920
+          ]
+        },
+        "remoteSensors": [
+          {
+            "id": "rs:101",
+            "name": "Aram Room",
+            "type": "ecobee3_remote_sensor",
+            "code": "GF7L",
+            "inUse": true,
+            "capability": [
+              {
+                "id": "1",
+                "type": "temperature",
+                "value": "725"
+              },
+              {
+                "id": "2",
+                "type": "occupancy",
+                "value": "false"
+              }
+            ]
+          },
+          {
+            "id": "ei:0",
+            "name": "Upstairs",
+            "type": "thermostat",
+            "inUse": false,
+            "capability": [
+              {
+                "id": "1",
+                "type": "temperature",
+                "value": "713"
+              },
+              {
+                "id": "2",
+                "type": "humidity",
+                "value": "35"
+              },
+              {
+                "id": "3",
+                "type": "occupancy",
+                "value": "false"
+              }
+            ]
+          }
+        ]
+      },
+      {
+        "identifier": "311055493483",
+        "name": "Living Room",
+        "thermostatRev": "210317120057",
+        "isRegistered": true,
+        "modelNumber": "athenaSmart",
+        "brand": "ecobee",
+        "features": "Home,HomeKit",
+        "lastModified": "2021-03-17 12:00:57",
+        "thermostatTime": "2021-03-17 23:07:56",
+        "utcTime": "2021-03-18 03:07:56",
+        "runtime": {
+          "runtimeRev": "210318030748",
+          "connected": true,
+          "firstConnected": "2017-02-01 23:30:39",
+          "connectDateTime": "2021-03-14 07:02:20",
+          "disconnectDateTime": "2021-03-02 11:20:38",
+          "lastModified": "2021-03-18 03:07:48",
+          "lastStatusModified": "2021-03-18 03:07:48",
+          "runtimeDate": "2021-03-18",
+          "runtimeInterval": 36,
+          "actualTemperature": 676,
+          "actualHumidity": 31,
+          "rawTemperature": 676,
+          "showIconMode": 0,
+          "desiredHeat": 680,
+          "desiredCool": 820,
+          "desiredHumidity": 36,
+          "desiredDehumidity": 60,
+          "desiredFanMode": "auto",
+          "desiredHeatRange": [
+            450,
+            790
+          ],
+          "desiredCoolRange": [
+            650,
+            920
+          ]
+        },
+        "remoteSensors": [
+          {
+            "id": "rs:100",
+            "name": "Basement",
+            "type": "ecobee3_remote_sensor",
+            "code": "F4J3",
+            "inUse": true,
+            "capability": [
+              {
+                "id": "1",
+                "type": "temperature",
+                "value": "676"
+              },
+              {
+                "id": "2",
+                "type": "occupancy",
+                "value": "true"
+              }
+            ]
+          },
+          {
+            "id": "ei:0",
+            "name": "Living Room",
+            "type": "thermostat",
+            "inUse": false,
+            "capability": [
+              {
+                "id": "1",
+                "type": "temperature",
+                "value": "720"
+              },
+              {
+                "id": "2",
+                "type": "humidity",
+                "value": "31"
+              },
+              {
+                "id": "3",
+                "type": "occupancy",
+                "value": "true"
+              }
+            ]
+          }
+        ]
+      }
+    ],
+    "status": {
+      "code": 0,
+      "message": ""
+    }
+  }
