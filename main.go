@@ -40,68 +40,33 @@ func main() {
 	log.Println("Starting Zone Split")
 
 	initilize()
-	//termData := getTemostatData()
+	termData := getTemostatData()
 	//log.Println(termData)
 
-	byt := []byte(`{"A": "1", "B": "2", "C": "3", "page": {
-		"page": 1,
-		"totalPages": "GOOZOO",
-		"pageSize": 2,
-		"total": 2
-	  },
-	  "thermostatList": [
-      	{
-			"identifier": "311053969180",
-			"name": "Upstairs"
-		},
-		{
-			"identifier": "111111",
-			"name": "Upstairs2"
-		}
-		]
-	}
-	`)
 	var dat map[string]interface{}
-	if err := json.Unmarshal(byt, &dat); err != nil {
+	if err := json.Unmarshal(termData, &dat); err != nil {
 		panic(err)
 	}
+	a := dat["page"]
+	log.Println(a)
+	fmt.Println(reflect.TypeOf(a), a)
 
-	page := dat["page"]
-	fmt.Println(page)
-	totalPages := page["totalPages"]
-
-	fmt.Println(totalPages)
+	myMap := a.(map[string]interface{})
+	log.Println(myMap["pageSize"])
 
 	os.Exit(0)
-	fmt.Println(dat)
-	num := dat["C"]
-	fmt.Println(num)
-	num2 := dat["thermostatList"]
-	fmt.Println(num2)
-
-	s := reflect.ValueOf(num2)
-	if s.Kind() != reflect.Slice {
-		panic("InterfaceSlice() given a non-slice type")
-	}
-
-	// Keep the distinction between nil and empty slice input
-	if s.IsNil() {
-		panic("OHOH")
-	}
-	log.Println(s.Len())
-	aaa := make([]interface{}, s.Len())
-	//b := aaa.Index(0).Interface()
-	//b := aaa.Ind
-	fmt.Println(aaa)
-
-	//if err := json.Unmarshal(dat, &dat); err != nil {
-	//	panic(err)
-	//}
-	//fmt.Println(dat)
-
 }
 
-func getTemostatData() string {
+type Tesrmostat struct {
+	name       string
+	Code       string
+	Interval   int
+	Expires_in int
+	Scope      string
+}
+
+//func getTemostatData() string {
+func getTemostatData() []byte {
 	req, err := http.NewRequest("GET", "https://api.ecobee.com/1/thermostat?format=json&body={\"selection\":{\"selectionType\":\"registered\",\"selectionMatch\":\"\",\"includeRuntime\":true,\"includeSensors\":true}}", nil)
 	if err != nil {
 		// handle err
@@ -123,9 +88,11 @@ func getTemostatData() string {
 	if err != nil {
 		log.Println("Error while reading the response bytes:", err)
 	}
-	res := string([]byte(body))
+	//res := string([]byte(body))
+	res := []byte(body)
 	//log.Println(res)
-
+	//res2 := string([]byte(body))
+	log.Println(string([]byte(body)))
 	return res
 }
 
@@ -433,4 +400,16 @@ type TokenObj struct {
 	Error_uri         int
 	Expires_in        int
 	Scope             string
+}
+
+type Sensor struct {
+	name string
+	temp float32
+}
+
+type Termostat struct {
+	name string
+	temp float32
+}
+type Home struct {
 }
