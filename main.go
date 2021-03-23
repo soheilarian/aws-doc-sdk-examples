@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"os"
 	"os/user"
+	"reflect"
 	"runtime"
 	"strings"
 )
@@ -39,21 +40,75 @@ func main() {
 	log.Println("Starting Zone Split")
 
 	initilize()
-	//os.Exit(0)
+	var term ecobeeThermostatData = fetchThermostatObj()
+	fmt.Println(term.Thermostatlist[0].Name)
+}
+
+func fetchThermostatObj() ecobeeThermostatData {
+	temostatJson := fetchTemostatJason()
+	thermostat := new(ecobeeThermostatData)
+
+	if err := json.Unmarshal(temostatJson, &thermostat); err != nil {
+		panic(err)
+	}
+	//fmt.Println(thermostat.Thermostatlist[0].Name)
+	return *thermostat
+}
+
+func fetchTemostatJason() []byte {
+	req, err := http.NewRequest("GET", "https://api.ecobee.com/1/thermostat?format=json&body={\"selection\":{\"selectionType\":\"registered\",\"selectionMatch\":\"\",\"includeRuntime\":true,\"includeSensors\":true}}", nil)
+	if err != nil {
+		// handle err
+	}
+	bearer := "Bearer " + accessToken
+
+	req.Header.Add("Content-Type", "text/json")
+	req.Header.Add("Authorization", bearer)
+
+	// Send req using http Client
+	client := &http.Client{}
+	resp, err := client.Do(req)
+	if err != nil {
+		log.Println("Error on response.\n[ERROR] -", err)
+	}
+	defer resp.Body.Close()
+
+	body, err := ioutil.ReadAll(resp.Body)
+	if err != nil {
+		log.Println("Error while reading the response bytes:", err)
+	}
+	//res := string([]byte(body))
+	res := []byte(body)
+
+	return res
+}
+
+func getFieldName(tag, key string, s interface{}) (fieldname string) {
+	rt := reflect.TypeOf(s)
+	if rt.Kind() != reflect.Struct {
+		panic("bad type")
+	}
+	for i := 0; i < rt.NumField(); i++ {
+		f := rt.Field(i)
+		v := strings.Split(f.Tag.Get(key), ",")[0] // use split to ignore tag "options" like omitempty, etc.
+		if v == tag {
+			return f.Name
+		}
+	}
+	return ""
 }
 
 func refreshAccessToken() {
-	fmt.Println("Refreshing the Token")
-	log.Fatal("FIX THIS.....")
+	log.Println("Refreshing the Token")
+
 	data := url.Values{
-		"grant_type": {"ecobeePin"},
-		"code":       {authCode},
+		"grant_type": {"refresh_token"},
+		"code":       {refreshToken},
 		"client_id":  {apiKey},
 	}
 
 	authData := postReq(AUTH_URL, data)
-	fmt.Println("AAA", authData)
-	fmt.Println("AAA", authData["error"])
+	//fmt.Println("fullpayload", authData)
 
 	if authData["error"] != nil {
 		log.Println("Error: " + authData["error"].(string))
@@ -62,25 +117,11 @@ func refreshAccessToken() {
 
 		if authData["error"] == "invalid_grant" {
 			//This is the case that app is registered but token is lost. we need to start over
-			log.Println("The Key has expiered. Whta to do?")
-			deleteFile(authFile)
-			//getAuth()
-
-		} else if authData["error"] == "invalid_client" {
-			log.Println("the token and app wont match")
-			deleteFile(authFile)
-
-		} else if authData["error"] == "authorization_pending" {
-			fmt.Println("- Please authorize ecobee to use the app")
-			fmt.Println("- Please login to https://www.ecobee.com")
-			fmt.Println("- Navigate to: MyApps --> Add Apps")
-			fmt.Println("- Enter the code: " + ecobeePin)
-			fmt.Println("- Click Validate")
-			//fmt.Println("- Please login to: https://www.ecobee.com/consumerportal/index.html#/my-apps/add/newv")
+			log.Println("The Key has expiered. or the value passed are wrong")
 		}
 	} else {
 		accessToken = authData["access_token"].(string)
-		refreshToken = authData["refresh_token"].(string)
+		deleteFile(tokenFile)
 		writeFile(tokenFile, "ACCESS_TOKEN="+accessToken+"\nREFRESH_TOKEN="+refreshToken)
 	}
 }
@@ -207,7 +248,6 @@ func getAuth() {
 	//fmt.Println("Call Scope" + pinObj.Scope)
 	ecobeePin = authObj.EcobeePin
 	authCode = authObj.Code
-	//deleteFile(authFile)
 	writeFile(authFile, "AUTH_CODE="+authCode+"\nECOBEE_PIN="+ecobeePin)
 }
 
@@ -276,11 +316,9 @@ func initilize() {
 
 	setupAuth()
 	setupToken()
-
+	refreshAccessToken()
 	printAuthValues()
 
-	//Load Auth File: to be changed with DB items
-	//loadAuthData()
 }
 
 func setupAuth() {
@@ -349,4 +387,63 @@ type TokenObj struct {
 	Error_uri         int
 	Expires_in        int
 	Scope             string
+}
+
+type ecobeeThermostatData struct {
+	Page struct {
+		Page       int `json:"page"`
+		Totalpages int `json:"totalPages"`
+		Pagesize   int `json:"pageSize"`
+		Total      int `json:"total"`
+	} `json:"page"`
+	Thermostatlist []struct {
+		Identifier     string `json:"identifier"`
+		Name           string `json:"name"`
+		Thermostatrev  string `json:"thermostatRev"`
+		Isregistered   bool   `json:"isRegistered"`
+		Modelnumber    string `json:"modelNumber"`
+		Brand          string `json:"brand"`
+		Features       string `json:"features"`
+		Lastmodified   string `json:"lastModified"`
+		Thermostattime string `json:"thermostatTime"`
+		Utctime        string `json:"utcTime"`
+		Runtime        struct {
+			Runtimerev         string `json:"runtimeRev"`
+			Connected          bool   `json:"connected"`
+			Firstconnected     string `json:"firstConnected"`
+			Connectdatetime    string `json:"connectDateTime"`
+			Disconnectdatetime string `json:"disconnectDateTime"`
+			Lastmodified       string `json:"lastModified"`
+			Laststatusmodified string `json:"lastStatusModified"`
+			Runtimedate        string `json:"runtimeDate"`
+			Runtimeinterval    int    `json:"runtimeInterval"`
+			Actualtemperature  int    `json:"actualTemperature"`
+			Actualhumidity     int    `json:"actualHumidity"`
+			Rawtemperature     int    `json:"rawTemperature"`
+			Showiconmode       int    `json:"showIconMode"`
+			Desiredheat        int    `json:"desiredHeat"`
+			Desiredcool        int    `json:"desiredCool"`
+			Desiredhumidity    int    `json:"desiredHumidity"`
+			Desireddehumidity  int    `json:"desiredDehumidity"`
+			Desiredfanmode     string `json:"desiredFanMode"`
+			Desiredheatrange   []int  `json:"desiredHeatRange"`
+			Desiredcoolrange   []int  `json:"desiredCoolRange"`
+		} `json:"runtime"`
+		Remotesensors []struct {
+			ID         string `json:"id"`
+			Name       string `json:"name"`
+			Type       string `json:"type"`
+			Code       string `json:"code,omitempty"`
+			Inuse      bool   `json:"inUse"`
+			Capability []struct {
+				ID    string `json:"id"`
+				Type  string `json:"type"`
+				Value string `json:"value"`
+			} `json:"capability"`
+		} `json:"remoteSensors"`
+	} `json:"thermostatList"`
+	Status struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	} `json:"status"`
 }
