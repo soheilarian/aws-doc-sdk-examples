@@ -40,33 +40,22 @@ func main() {
 	log.Println("Starting Zone Split")
 
 	initilize()
-	termData := getTemostatData()
-	//log.Println(termData)
+	var term ecobeeThermostatData = fetchThermostatObj()
+	fmt.Println(term.Thermostatlist[0].Name)
+}
 
-	var dat map[string]interface{}
-	if err := json.Unmarshal(termData, &dat); err != nil {
+func fetchThermostatObj() ecobeeThermostatData {
+	temostatJson := fetchTemostatJason()
+	thermostat := new(ecobeeThermostatData)
+
+	if err := json.Unmarshal(temostatJson, &thermostat); err != nil {
 		panic(err)
 	}
-	a := dat["page"]
-	log.Println(a)
-	fmt.Println(reflect.TypeOf(a), a)
-
-	myMap := a.(map[string]interface{})
-	log.Println(myMap["pageSize"])
-
-	os.Exit(0)
+	//fmt.Println(thermostat.Thermostatlist[0].Name)
+	return *thermostat
 }
 
-type Tesrmostat struct {
-	name       string
-	Code       string
-	Interval   int
-	Expires_in int
-	Scope      string
-}
-
-//func getTemostatData() string {
-func getTemostatData() []byte {
+func fetchTemostatJason() []byte {
 	req, err := http.NewRequest("GET", "https://api.ecobee.com/1/thermostat?format=json&body={\"selection\":{\"selectionType\":\"registered\",\"selectionMatch\":\"\",\"includeRuntime\":true,\"includeSensors\":true}}", nil)
 	if err != nil {
 		// handle err
@@ -90,9 +79,7 @@ func getTemostatData() []byte {
 	}
 	//res := string([]byte(body))
 	res := []byte(body)
-	//log.Println(res)
-	//res2 := string([]byte(body))
-	log.Println(string([]byte(body)))
+
 	return res
 }
 
@@ -402,14 +389,61 @@ type TokenObj struct {
 	Scope             string
 }
 
-type Sensor struct {
-	name string
-	temp float32
-}
-
-type Termostat struct {
-	name string
-	temp float32
-}
-type Home struct {
+type ecobeeThermostatData struct {
+	Page struct {
+		Page       int `json:"page"`
+		Totalpages int `json:"totalPages"`
+		Pagesize   int `json:"pageSize"`
+		Total      int `json:"total"`
+	} `json:"page"`
+	Thermostatlist []struct {
+		Identifier     string `json:"identifier"`
+		Name           string `json:"name"`
+		Thermostatrev  string `json:"thermostatRev"`
+		Isregistered   bool   `json:"isRegistered"`
+		Modelnumber    string `json:"modelNumber"`
+		Brand          string `json:"brand"`
+		Features       string `json:"features"`
+		Lastmodified   string `json:"lastModified"`
+		Thermostattime string `json:"thermostatTime"`
+		Utctime        string `json:"utcTime"`
+		Runtime        struct {
+			Runtimerev         string `json:"runtimeRev"`
+			Connected          bool   `json:"connected"`
+			Firstconnected     string `json:"firstConnected"`
+			Connectdatetime    string `json:"connectDateTime"`
+			Disconnectdatetime string `json:"disconnectDateTime"`
+			Lastmodified       string `json:"lastModified"`
+			Laststatusmodified string `json:"lastStatusModified"`
+			Runtimedate        string `json:"runtimeDate"`
+			Runtimeinterval    int    `json:"runtimeInterval"`
+			Actualtemperature  int    `json:"actualTemperature"`
+			Actualhumidity     int    `json:"actualHumidity"`
+			Rawtemperature     int    `json:"rawTemperature"`
+			Showiconmode       int    `json:"showIconMode"`
+			Desiredheat        int    `json:"desiredHeat"`
+			Desiredcool        int    `json:"desiredCool"`
+			Desiredhumidity    int    `json:"desiredHumidity"`
+			Desireddehumidity  int    `json:"desiredDehumidity"`
+			Desiredfanmode     string `json:"desiredFanMode"`
+			Desiredheatrange   []int  `json:"desiredHeatRange"`
+			Desiredcoolrange   []int  `json:"desiredCoolRange"`
+		} `json:"runtime"`
+		Remotesensors []struct {
+			ID         string `json:"id"`
+			Name       string `json:"name"`
+			Type       string `json:"type"`
+			Code       string `json:"code,omitempty"`
+			Inuse      bool   `json:"inUse"`
+			Capability []struct {
+				ID    string `json:"id"`
+				Type  string `json:"type"`
+				Value string `json:"value"`
+			} `json:"capability"`
+		} `json:"remoteSensors"`
+	} `json:"thermostatList"`
+	Status struct {
+		Code    int    `json:"code"`
+		Message string `json:"message"`
+	} `json:"status"`
 }
