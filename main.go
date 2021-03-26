@@ -10,8 +10,8 @@ import (
 	"net/url"
 	"os"
 	"os/user"
-	"reflect"
 	"runtime"
+	"strconv"
 	"strings"
 )
 
@@ -29,6 +29,7 @@ var refreshToken string
 var homePath string
 var authFile string
 var tokenFile string
+var err error
 
 func main() {
 	fmt.Println("------------------------------")
@@ -40,25 +41,80 @@ func main() {
 	log.Println("Starting Zone Split")
 
 	initilize()
-	var term ecobeeThermostatData = fetchThermostatObj()
-	fmt.Println(term.Thermostatlist[0].Name)
+
+	var term EcobeeThermostatData = fetchThermostatObj()
+	fmt.Printf("%+v\n", term.Thermostatlist[0])
+	room := new(Room)
+	//This must ask for mapping for the first time
+	//This must map as pointer
+	room.Name = "Aram's Room"
+	room.sensorData.Name = term.Thermostatlist[0].Remotesensors[0].Name
+	room.sensorData.Temprature, err = strconv.ParseFloat(term.Thermostatlist[0].Remotesensors[0].Capability[0].Value, 32)
+	if err != nil {
+		log.Panicln(err)
+	}
+
+	sensorCount := 0
+	thermostatCount := len(term.Thermostatlist)
+	for i := 0; i < thermostatCount; i++ {
+		sensorCount += len(term.Thermostatlist[i].Remotesensors)
+	}
+	aa := make(map[string]Room)
+	//r := new(Room)
+	rr := new(Room)
+	rr.Name = "TTTT"
+	rr.ControlledRegister = true
+	rr.sensorData.Name = "BLA BLA"
+	//a["B"] = *new(Room)
+	aa["A"] = *rr
+	fmt.Printf("%+v\n", aa)
+
+	//How can we use sensorCount?
+	a := make(map[string]int)
+	a["A"] = 1
+	a["B"] = 2
+	fmt.Println(a)
+	var rooms [4]Room
+	rooms[0].Name = "AA"
+
+	fmt.Printf("Termostat Count: %d\n", thermostatCount)
+	fmt.Printf("Remote Senror: %d\n", sensorCount)
+
+	for t := 0; t < len(term.Thermostatlist); t++ {
+		for s := 0; s < len(term.Thermostatlist[t].Remotesensors); s++ {
+
+		}
+	}
+
+	fmt.Println("------------------------------")
+	for t := 0; t < len(term.Thermostatlist); t++ {
+		fmt.Printf("Termostat Name is: %s\n", term.Thermostatlist[t].Name)
+		fmt.Printf("Termostat Temreture is: %.1fF\n", float64(term.Thermostatlist[t].Runtime.Actualtemperature)/10)
+		fmt.Printf("Termostat Humidity is: %d%%\n", term.Thermostatlist[t].Runtime.Actualhumidity)
+		fmt.Printf("Termostat Remote Sensor Count: %d\n", len(term.Thermostatlist[t].Remotesensors))
+		for s := 0; s < len(term.Thermostatlist[t].Remotesensors); s++ {
+			fmt.Printf("Sonsor Name is: %s\n", term.Thermostatlist[t].Remotesensors[s].Name)
+			fmt.Printf("Sonsor Temprature is: %sF\n", term.Thermostatlist[t].Remotesensors[s].Capability[0].Value)
+		}
+		fmt.Println("+++++++++++++++++++++++++++++++++++++++++")
+	}
+	fmt.Printf("%+v\n", room)
 }
 
-func fetchThermostatObj() ecobeeThermostatData {
+func fetchThermostatObj() EcobeeThermostatData {
 	temostatJson := fetchTemostatJason()
-	thermostat := new(ecobeeThermostatData)
+	thermostat := new(EcobeeThermostatData)
 
 	if err := json.Unmarshal(temostatJson, &thermostat); err != nil {
 		panic(err)
 	}
-	//fmt.Println(thermostat.Thermostatlist[0].Name)
 	return *thermostat
 }
 
 func fetchTemostatJason() []byte {
 	req, err := http.NewRequest("GET", "https://api.ecobee.com/1/thermostat?format=json&body={\"selection\":{\"selectionType\":\"registered\",\"selectionMatch\":\"\",\"includeRuntime\":true,\"includeSensors\":true}}", nil)
 	if err != nil {
-		// handle err
+		log.Panicln(err)
 	}
 	bearer := "Bearer " + accessToken
 
@@ -81,21 +137,6 @@ func fetchTemostatJason() []byte {
 	res := []byte(body)
 
 	return res
-}
-
-func getFieldName(tag, key string, s interface{}) (fieldname string) {
-	rt := reflect.TypeOf(s)
-	if rt.Kind() != reflect.Struct {
-		panic("bad type")
-	}
-	for i := 0; i < rt.NumField(); i++ {
-		f := rt.Field(i)
-		v := strings.Split(f.Tag.Get(key), ",")[0] // use split to ignore tag "options" like omitempty, etc.
-		if v == tag {
-			return f.Name
-		}
-	}
-	return ""
 }
 
 func refreshAccessToken() {
@@ -389,7 +430,7 @@ type TokenObj struct {
 	Scope             string
 }
 
-type ecobeeThermostatData struct {
+type EcobeeThermostatData struct {
 	Page struct {
 		Page       int `json:"page"`
 		Totalpages int `json:"totalPages"`
@@ -446,4 +487,15 @@ type ecobeeThermostatData struct {
 		Code    int    `json:"code"`
 		Message string `json:"message"`
 	} `json:"status"`
+}
+
+type Room struct {
+	Name               string
+	ControlledRegister bool
+	sensorData         struct {
+		Name           string
+		Temprature     float64
+		Humidity       int
+		ThermostatName string
+	}
 }
