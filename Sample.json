@@ -1,182 +1,414 @@
-2021/03/17 23:07:54 {
-    "page": {
-      "page": 1,
-      "totalPages": 1,
-      "pageSize": 2,
-      "total": 2
-    },
-    "thermostatList": [
-      {
-        "identifier": "311053969180",
-        "name": "Upstairs",
-        "thermostatRev": "210317220049",
-        "isRegistered": true,
-        "modelNumber": "athenaSmart",
-        "brand": "ecobee",
-        "features": "Home,HomeKit",
-        "lastModified": "2021-03-17 22:00:49",
-        "thermostatTime": "2021-03-17 23:07:56",
-        "utcTime": "2021-03-18 03:07:56",
-        "runtime": {
-          "runtimeRev": "210318030532",
-          "connected": true,
-          "firstConnected": "2017-01-09 19:25:50",
-          "connectDateTime": "2021-03-14 07:02:22",
-          "disconnectDateTime": "2021-03-02 11:17:55",
-          "lastModified": "2021-03-18 03:05:32",
-          "lastStatusModified": "2021-03-18 03:05:32",
-          "runtimeDate": "2021-03-18",
-          "runtimeInterval": 34,
-          "actualTemperature": 725,
-          "actualHumidity": 35,
-          "rawTemperature": 725,
-          "showIconMode": 0,
-          "desiredHeat": 730,
-          "desiredCool": 770,
-          "desiredHumidity": 36,
-          "desiredDehumidity": 60,
-          "desiredFanMode": "auto",
-          "desiredHeatRange": [
-            450,
-            790
-          ],
-          "desiredCoolRange": [
-            650,
-            920
-          ]
-        },
-        "remoteSensors": [
-          {
-            "id": "rs:101",
-            "name": "Aram Room",
-            "type": "ecobee3_remote_sensor",
-            "code": "GF7L",
-            "inUse": true,
-            "capability": [
-              {
-                "id": "1",
-                "type": "temperature",
-                "value": "725"
-              },
-              {
-                "id": "2",
-                "type": "occupancy",
-                "value": "false"
-              }
-            ]
-          },
-          {
-            "id": "ei:0",
-            "name": "Upstairs",
-            "type": "thermostat",
-            "inUse": false,
-            "capability": [
-              {
-                "id": "1",
-                "type": "temperature",
-                "value": "713"
-              },
-              {
-                "id": "2",
-                "type": "humidity",
-                "value": "35"
-              },
-              {
-                "id": "3",
-                "type": "occupancy",
-                "value": "false"
-              }
-            ]
-          }
+{
+  "page": {
+    "page": 1,
+    "totalPages": 1,
+    "pageSize": 2,
+    "total": 2
+  },
+  "thermostatList": [
+    {
+      "identifier": "311053969180",
+      "name": "Upstairs",
+      "thermostatRev": "210329233808",
+      "isRegistered": true,
+      "modelNumber": "athenaSmart",
+      "brand": "ecobee",
+      "features": "Home,HomeKit",
+      "lastModified": "2021-03-29 23:38:08",
+      "thermostatTime": "2021-03-29 20:59:33",
+      "utcTime": "2021-03-30 00:59:33",
+      "settings": {
+        "hvacMode": "heat",
+        "lastServiceDate": "2020-06-23",
+        "serviceRemindMe": true,
+        "monthsBetweenService": 6,
+        "remindMeDate": "2020-12-23",
+        "vent": "off",
+        "ventilatorMinOnTime": 20,
+        "serviceRemindTechnician": false,
+        "eiLocation": "",
+        "coldTempAlert": 500,
+        "coldTempAlertEnabled": true,
+        "hotTempAlert": 920,
+        "hotTempAlertEnabled": true,
+        "coolStages": 1,
+        "heatStages": 1,
+        "maxSetBack": 100,
+        "maxSetForward": 80,
+        "quickSaveSetBack": 40,
+        "quickSaveSetForward": 40,
+        "hasHeatPump": false,
+        "hasForcedAir": true,
+        "hasBoiler": false,
+        "hasHumidifier": false,
+        "hasErv": false,
+        "hasHrv": false,
+        "condensationAvoid": false,
+        "useCelsius": false,
+        "useTimeFormat12": true,
+        "locale": "en",
+        "humidity": "36",
+        "humidifierMode": "off",
+        "backlightOnIntensity": 10,
+        "backlightSleepIntensity": 4,
+        "backlightOffTime": 60,
+        "soundTickVolume": 0,
+        "soundAlertVolume": 0,
+        "compressorProtectionMinTime": 300,
+        "compressorProtectionMinTemp": 350,
+        "stage1HeatingDifferentialTemp": 5,
+        "stage1CoolingDifferentialTemp": 5,
+        "stage1HeatingDissipationTime": 31,
+        "stage1CoolingDissipationTime": 31,
+        "heatPumpReversalOnCool": true,
+        "fanControlRequired": false,
+        "fanMinOnTime": 0,
+        "heatCoolMinDelta": 20,
+        "tempCorrection": 0,
+        "holdAction": "nextPeriod",
+        "heatPumpGroundWater": false,
+        "hasElectric": false,
+        "hasDehumidifier": false,
+        "dehumidifierMode": "off",
+        "dehumidifierLevel": 60,
+        "dehumidifyWithAC": false,
+        "dehumidifyOvercoolOffset": 0,
+        "autoHeatCoolFeatureEnabled": true,
+        "wifiOfflineAlert": false,
+        "heatMinTemp": 450,
+        "heatMaxTemp": 1200,
+        "coolMinTemp": -100,
+        "coolMaxTemp": 1200,
+        "heatRangeHigh": 790,
+        "heatRangeLow": 450,
+        "coolRangeHigh": 920,
+        "coolRangeLow": 650,
+        "userAccessCode": "",
+        "userAccessSetting": 0,
+        "auxRuntimeAlert": 10800,
+        "auxOutdoorTempAlert": 500,
+        "auxMaxOutdoorTemp": 350,
+        "auxRuntimeAlertNotify": false,
+        "auxOutdoorTempAlertNotify": false,
+        "auxRuntimeAlertNotifyTechnician": false,
+        "auxOutdoorTempAlertNotifyTechnician": false,
+        "disablePreHeating": true,
+        "disablePreCooling": true,
+        "installerCodeRequired": false,
+        "drAccept": "always",
+        "isRentalProperty": false,
+        "useZoneController": false,
+        "randomStartDelayCool": 0,
+        "randomStartDelayHeat": 0,
+        "humidityHighAlert": 95,
+        "humidityLowAlert": 10,
+        "disableHeatPumpAlerts": false,
+        "disableAlertsOnIdt": false,
+        "humidityAlertNotify": true,
+        "humidityAlertNotifyTechnician": false,
+        "tempAlertNotify": true,
+        "tempAlertNotifyTechnician": false,
+        "monthlyElectricityBillLimit": 0,
+        "enableElectricityBillAlert": false,
+        "enableProjectedElectricityBillAlert": false,
+        "electricityBillingDayOfMonth": 1,
+        "electricityBillCycleMonths": 1,
+        "electricityBillStartMonth": 1,
+        "ventilatorMinOnTimeHome": 20,
+        "ventilatorMinOnTimeAway": 0,
+        "backlightOffDuringSleep": false,
+        "autoAway": false,
+        "smartCirculation": false,
+        "followMeComfort": false,
+        "ventilatorType": "none",
+        "isVentilatorTimerOn": false,
+        "ventilatorOffDateTime": "",
+        "hasUVFilter": true,
+        "coolingLockout": false,
+        "ventilatorFreeCooling": true,
+        "dehumidifyWhenHeating": false,
+        "ventilatorDehumidify": true,
+        "groupRef": "",
+        "groupName": "",
+        "groupSetting": 0,
+        "fanSpeed": "low"
+      },
+      "runtime": {
+        "runtimeRev": "210330005919",
+        "connected": true,
+        "firstConnected": "2017-01-09 19:25:50",
+        "connectDateTime": "2021-03-28 15:09:09",
+        "disconnectDateTime": "2021-03-02 11:17:55",
+        "lastModified": "2021-03-30 00:59:19",
+        "lastStatusModified": "2021-03-30 00:59:19",
+        "runtimeDate": "2021-03-30",
+        "runtimeInterval": 10,
+        "actualTemperature": 729,
+        "actualHumidity": 42,
+        "rawTemperature": 729,
+        "showIconMode": 0,
+        "desiredHeat": 720,
+        "desiredCool": 720,
+        "desiredHumidity": 36,
+        "desiredDehumidity": 60,
+        "desiredFanMode": "auto",
+        "desiredHeatRange": [
+          450,
+          790
+        ],
+        "desiredCoolRange": [
+          650,
+          920
         ]
       },
-      {
-        "identifier": "311055493483",
-        "name": "Living Room",
-        "thermostatRev": "210317120057",
-        "isRegistered": true,
-        "modelNumber": "athenaSmart",
-        "brand": "ecobee",
-        "features": "Home,HomeKit",
-        "lastModified": "2021-03-17 12:00:57",
-        "thermostatTime": "2021-03-17 23:07:56",
-        "utcTime": "2021-03-18 03:07:56",
-        "runtime": {
-          "runtimeRev": "210318030748",
-          "connected": true,
-          "firstConnected": "2017-02-01 23:30:39",
-          "connectDateTime": "2021-03-14 07:02:20",
-          "disconnectDateTime": "2021-03-02 11:20:38",
-          "lastModified": "2021-03-18 03:07:48",
-          "lastStatusModified": "2021-03-18 03:07:48",
-          "runtimeDate": "2021-03-18",
-          "runtimeInterval": 36,
-          "actualTemperature": 676,
-          "actualHumidity": 31,
-          "rawTemperature": 676,
-          "showIconMode": 0,
-          "desiredHeat": 680,
-          "desiredCool": 820,
-          "desiredHumidity": 36,
-          "desiredDehumidity": 60,
-          "desiredFanMode": "auto",
-          "desiredHeatRange": [
-            450,
-            790
-          ],
-          "desiredCoolRange": [
-            650,
-            920
+      "remoteSensors": [
+        {
+          "id": "rs:101",
+          "name": "Aram Room",
+          "type": "ecobee3_remote_sensor",
+          "code": "GF7L",
+          "inUse": true,
+          "capability": [
+            {
+              "id": "1",
+              "type": "temperature",
+              "value": "729"
+            },
+            {
+              "id": "2",
+              "type": "occupancy",
+              "value": "false"
+            }
           ]
         },
-        "remoteSensors": [
-          {
-            "id": "rs:100",
-            "name": "Basement",
-            "type": "ecobee3_remote_sensor",
-            "code": "F4J3",
-            "inUse": true,
-            "capability": [
-              {
-                "id": "1",
-                "type": "temperature",
-                "value": "676"
-              },
-              {
-                "id": "2",
-                "type": "occupancy",
-                "value": "true"
-              }
-            ]
-          },
-          {
-            "id": "ei:0",
-            "name": "Living Room",
-            "type": "thermostat",
-            "inUse": false,
-            "capability": [
-              {
-                "id": "1",
-                "type": "temperature",
-                "value": "720"
-              },
-              {
-                "id": "2",
-                "type": "humidity",
-                "value": "31"
-              },
-              {
-                "id": "3",
-                "type": "occupancy",
-                "value": "true"
-              }
-            ]
-          }
+        {
+          "id": "ei:0",
+          "name": "Upstairs",
+          "type": "thermostat",
+          "inUse": false,
+          "capability": [
+            {
+              "id": "1",
+              "type": "temperature",
+              "value": "709"
+            },
+            {
+              "id": "2",
+              "type": "humidity",
+              "value": "42"
+            },
+            {
+              "id": "3",
+              "type": "occupancy",
+              "value": "true"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "identifier": "311055493483",
+      "name": "Living Room",
+      "thermostatRev": "210329120049",
+      "isRegistered": true,
+      "modelNumber": "athenaSmart",
+      "brand": "ecobee",
+      "features": "Home,HomeKit",
+      "lastModified": "2021-03-29 12:00:49",
+      "thermostatTime": "2021-03-29 20:59:33",
+      "utcTime": "2021-03-30 00:59:33",
+      "settings": {
+        "hvacMode": "heat",
+        "lastServiceDate": "2019-04-01",
+        "serviceRemindMe": true,
+        "monthsBetweenService": 6,
+        "remindMeDate": "2019-10-01",
+        "vent": "off",
+        "ventilatorMinOnTime": 20,
+        "serviceRemindTechnician": false,
+        "eiLocation": "",
+        "coldTempAlert": 500,
+        "coldTempAlertEnabled": true,
+        "hotTempAlert": 920,
+        "hotTempAlertEnabled": true,
+        "coolStages": 1,
+        "heatStages": 1,
+        "maxSetBack": 100,
+        "maxSetForward": 80,
+        "quickSaveSetBack": 40,
+        "quickSaveSetForward": 40,
+        "hasHeatPump": false,
+        "hasForcedAir": true,
+        "hasBoiler": false,
+        "hasHumidifier": false,
+        "hasErv": false,
+        "hasHrv": false,
+        "condensationAvoid": false,
+        "useCelsius": false,
+        "useTimeFormat12": true,
+        "locale": "en",
+        "humidity": "36",
+        "humidifierMode": "off",
+        "backlightOnIntensity": 10,
+        "backlightSleepIntensity": 4,
+        "backlightOffTime": 60,
+        "soundTickVolume": 0,
+        "soundAlertVolume": 0,
+        "compressorProtectionMinTime": 300,
+        "compressorProtectionMinTemp": 350,
+        "stage1HeatingDifferentialTemp": 5,
+        "stage1CoolingDifferentialTemp": 5,
+        "stage1HeatingDissipationTime": 31,
+        "stage1CoolingDissipationTime": 31,
+        "heatPumpReversalOnCool": true,
+        "fanControlRequired": false,
+        "fanMinOnTime": 0,
+        "heatCoolMinDelta": 20,
+        "tempCorrection": 0,
+        "holdAction": "nextPeriod",
+        "heatPumpGroundWater": false,
+        "hasElectric": false,
+        "hasDehumidifier": false,
+        "dehumidifierMode": "off",
+        "dehumidifierLevel": 60,
+        "dehumidifyWithAC": false,
+        "dehumidifyOvercoolOffset": 0,
+        "autoHeatCoolFeatureEnabled": true,
+        "wifiOfflineAlert": false,
+        "heatMinTemp": 450,
+        "heatMaxTemp": 1200,
+        "coolMinTemp": -100,
+        "coolMaxTemp": 1200,
+        "heatRangeHigh": 790,
+        "heatRangeLow": 450,
+        "coolRangeHigh": 920,
+        "coolRangeLow": 650,
+        "userAccessCode": "",
+        "userAccessSetting": 0,
+        "auxRuntimeAlert": 10800,
+        "auxOutdoorTempAlert": 500,
+        "auxMaxOutdoorTemp": 700,
+        "auxRuntimeAlertNotify": false,
+        "auxOutdoorTempAlertNotify": false,
+        "auxRuntimeAlertNotifyTechnician": false,
+        "auxOutdoorTempAlertNotifyTechnician": false,
+        "disablePreHeating": true,
+        "disablePreCooling": true,
+        "installerCodeRequired": false,
+        "drAccept": "always",
+        "isRentalProperty": false,
+        "useZoneController": false,
+        "randomStartDelayCool": 0,
+        "randomStartDelayHeat": 0,
+        "humidityHighAlert": -1,
+        "humidityLowAlert": 20,
+        "disableHeatPumpAlerts": false,
+        "disableAlertsOnIdt": false,
+        "humidityAlertNotify": true,
+        "humidityAlertNotifyTechnician": false,
+        "tempAlertNotify": true,
+        "tempAlertNotifyTechnician": false,
+        "monthlyElectricityBillLimit": 0,
+        "enableElectricityBillAlert": false,
+        "enableProjectedElectricityBillAlert": false,
+        "electricityBillingDayOfMonth": 1,
+        "electricityBillCycleMonths": 1,
+        "electricityBillStartMonth": 1,
+        "ventilatorMinOnTimeHome": 20,
+        "ventilatorMinOnTimeAway": 0,
+        "backlightOffDuringSleep": true,
+        "autoAway": false,
+        "smartCirculation": false,
+        "followMeComfort": true,
+        "ventilatorType": "none",
+        "isVentilatorTimerOn": false,
+        "ventilatorOffDateTime": "",
+        "hasUVFilter": true,
+        "coolingLockout": false,
+        "ventilatorFreeCooling": true,
+        "dehumidifyWhenHeating": false,
+        "ventilatorDehumidify": true,
+        "groupRef": "9cb85db837fff1460189",
+        "groupName": "Away all",
+        "groupSetting": 514,
+        "fanSpeed": "low"
+      },
+      "runtime": {
+        "runtimeRev": "210330005614",
+        "connected": true,
+        "firstConnected": "2017-02-01 23:30:39",
+        "connectDateTime": "2021-03-28 15:09:13",
+        "disconnectDateTime": "2021-03-26 19:18:15",
+        "lastModified": "2021-03-30 00:56:14",
+        "lastStatusModified": "2021-03-30 00:56:14",
+        "runtimeDate": "2021-03-30",
+        "runtimeInterval": 9,
+        "actualTemperature": 721,
+        "actualHumidity": 37,
+        "rawTemperature": 721,
+        "showIconMode": 0,
+        "desiredHeat": 715,
+        "desiredCool": 770,
+        "desiredHumidity": 36,
+        "desiredDehumidity": 60,
+        "desiredFanMode": "auto",
+        "desiredHeatRange": [
+          450,
+          790
+        ],
+        "desiredCoolRange": [
+          650,
+          920
         ]
-      }
-    ],
-    "status": {
-      "code": 0,
-      "message": ""
+      },
+      "remoteSensors": [
+        {
+          "id": "rs:100",
+          "name": "Basement",
+          "type": "ecobee3_remote_sensor",
+          "code": "F4J3",
+          "inUse": false,
+          "capability": [
+            {
+              "id": "1",
+              "type": "temperature",
+              "value": "649"
+            },
+            {
+              "id": "2",
+              "type": "occupancy",
+              "value": "true"
+            }
+          ]
+        },
+        {
+          "id": "ei:0",
+          "name": "Living Room",
+          "type": "thermostat",
+          "inUse": true,
+          "capability": [
+            {
+              "id": "1",
+              "type": "temperature",
+              "value": "721"
+            },
+            {
+              "id": "2",
+              "type": "humidity",
+              "value": "37"
+            },
+            {
+              "id": "3",
+              "type": "occupancy",
+              "value": "true"
+            }
+          ]
+        }
+      ]
     }
+  ],
+  "status": {
+    "code": 0,
+    "message": ""
   }
+}
