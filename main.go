@@ -41,64 +41,97 @@ func main() {
 	log.Println("Starting Zone Split")
 
 	initilize()
+	room := make(map[string]Room)
+	//Loop every 60 sec
+	refreshTetmostatStruct(*&room)
 
-	var term EcobeeThermostatData = fetchThermostatObj()
-	fmt.Printf("%+v\n", term.Thermostatlist[0])
-	room := new(Room)
-	//This must ask for mapping for the first time
-	//This must map as pointer
-	room.Name = "Aram's Room"
-	room.sensorData.Name = term.Thermostatlist[0].Remotesensors[0].Name
-	room.sensorData.Temprature, err = strconv.ParseFloat(term.Thermostatlist[0].Remotesensors[0].Capability[0].Value, 32)
-	if err != nil {
-		log.Panicln(err)
+	log.Println("TODO: fix the room setting manually. use user input later")
+	temRoom := room["Upstairs"]
+	temRoom.ControlledRegister = false
+	room["Upstairs"] = temRoom
+
+	fmt.Printf("%+v\n", room)
+	html := ""
+	for key, element := range room {
+		if element.ControlledRegister {
+			if element.hvacMode == "heat" {
+				if element.Temprature < element.DesiredTemrature {
+					element.RegisterOpen = true
+				} else {
+					element.RegisterOpen = false
+				}
+			} else if element.hvacMode == "cool" {
+				if element.Temprature > element.DesiredTemrature {
+					element.RegisterOpen = true
+				} else {
+					element.RegisterOpen = false
+				}
+			} else {
+				fmt.Printf("cold not undrestand hvac mode: %s\n", element.hvacMode)
+			}
+			oc := "closed"
+			if element.ControlledRegister && element.RegisterOpen {
+				oc = "open"
+			}
+			fmt.Printf("The room %s's vent(s) is %s. Tempreture is %gF --> %gF\n", key, oc, element.Temprature, element.DesiredTemrature)
+			//html = html + "The room " + key + "'s vent(s) is " + oc + ". Tempreture is " + element.Temprature + "F --> " + element.DesiredTemrature + "F\n</BR>"
+
+		}
 	}
+	fmt.Println("---------------------------------------------")
+
+	// End of loop
+	//http.HandleFunc("/", index_handler)
+	//http.ListenAndServe(":8080", nil)
+}
+
+func index_handler(w http.ResponseWriter, r *http.Request) {
+	fmt.Fprintf(w, "you are very goozoo")
+}
+
+func refreshTetmostatStruct(room map[string]Room) {
+	var term EcobeeThermostatData = fetchThermostatObj()
 
 	sensorCount := 0
 	thermostatCount := len(term.Thermostatlist)
 	for i := 0; i < thermostatCount; i++ {
 		sensorCount += len(term.Thermostatlist[i].Remotesensors)
 	}
-	aa := make(map[string]Room)
-	//r := new(Room)
-	rr := new(Room)
-	rr.Name = "TTTT"
-	rr.ControlledRegister = true
-	rr.sensorData.Name = "BLA BLA"
-	//a["B"] = *new(Room)
-	aa["A"] = *rr
-	fmt.Printf("%+v\n", aa)
-
-	//How can we use sensorCount?
-	a := make(map[string]int)
-	a["A"] = 1
-	a["B"] = 2
-	fmt.Println(a)
-	var rooms [4]Room
-	rooms[0].Name = "AA"
-
-	fmt.Printf("Termostat Count: %d\n", thermostatCount)
-	fmt.Printf("Remote Senror: %d\n", sensorCount)
 
 	for t := 0; t < len(term.Thermostatlist); t++ {
 		for s := 0; s < len(term.Thermostatlist[t].Remotesensors); s++ {
+			tempRoom := new(Room)
+			tempRoom.hvacMode = term.Thermostatlist[t].Settings.Hvacmode
+			tempRoom.Name = term.Thermostatlist[t].Remotesensors[s].Name
+			tempRoom.SensorName = term.Thermostatlist[t].Remotesensors[s].Name
+			tempRoom.SensorID = term.Thermostatlist[t].Remotesensors[s].ID
+			tempRoom.ControlledRegister = true
+			if tempRoom.hvacMode == "heat" {
+				tempRoom.DesiredTemrature = float64(term.Thermostatlist[t].Runtime.Desiredheat) / 10
+			} else if tempRoom.hvacMode == "cool" {
+				tempRoom.DesiredTemrature = float64(term.Thermostatlist[t].Runtime.Desiredcool) / 10
+			}
 
+			for i := 0; i < len(term.Thermostatlist[t].Remotesensors[s].Capability); i++ {
+				if term.Thermostatlist[t].Remotesensors[s].Capability[i].Type == "temperature" {
+					tempRoom.Temprature, err = strconv.ParseFloat(term.Thermostatlist[t].Remotesensors[s].Capability[i].Value, 32)
+					if err != nil {
+						log.Printf("We could not convert %s to a float value", term.Thermostatlist[t].Remotesensors[s].Capability[i].Value)
+						tempRoom.Temprature = 0
+					} else {
+						tempRoom.Temprature = tempRoom.Temprature / 10
+					}
+				} else if term.Thermostatlist[t].Remotesensors[s].Capability[i].Type == "humidity" {
+					tempRoom.Humidity, err = strconv.Atoi(term.Thermostatlist[t].Remotesensors[s].Capability[i].Value)
+					if err != nil {
+						log.Printf("We could not convert %s to a int value", term.Thermostatlist[t].Remotesensors[s].Capability[i].Value)
+						tempRoom.Temprature = 0
+					}
+				}
+			}
+			room[tempRoom.Name] = *tempRoom
 		}
 	}
-
-	fmt.Println("------------------------------")
-	for t := 0; t < len(term.Thermostatlist); t++ {
-		fmt.Printf("Termostat Name is: %s\n", term.Thermostatlist[t].Name)
-		fmt.Printf("Termostat Temreture is: %.1fF\n", float64(term.Thermostatlist[t].Runtime.Actualtemperature)/10)
-		fmt.Printf("Termostat Humidity is: %d%%\n", term.Thermostatlist[t].Runtime.Actualhumidity)
-		fmt.Printf("Termostat Remote Sensor Count: %d\n", len(term.Thermostatlist[t].Remotesensors))
-		for s := 0; s < len(term.Thermostatlist[t].Remotesensors); s++ {
-			fmt.Printf("Sonsor Name is: %s\n", term.Thermostatlist[t].Remotesensors[s].Name)
-			fmt.Printf("Sonsor Temprature is: %sF\n", term.Thermostatlist[t].Remotesensors[s].Capability[0].Value)
-		}
-		fmt.Println("+++++++++++++++++++++++++++++++++++++++++")
-	}
-	fmt.Printf("%+v\n", room)
 }
 
 func fetchThermostatObj() EcobeeThermostatData {
@@ -112,7 +145,9 @@ func fetchThermostatObj() EcobeeThermostatData {
 }
 
 func fetchTemostatJason() []byte {
-	req, err := http.NewRequest("GET", "https://api.ecobee.com/1/thermostat?format=json&body={\"selection\":{\"selectionType\":\"registered\",\"selectionMatch\":\"\",\"includeRuntime\":true,\"includeSensors\":true}}", nil)
+	//req, err := http.NewRequest("GET", "https://api.ecobee.com/1/thermostat?format=json&body={\"selection\":{\"selectionType\":\"registered\",\"selectionMatch\":\"\",\"includeRuntime\":true,\"includeSensors\":true}}", nil)
+	req, err := http.NewRequest("GET", "https://api.ecobee.com/1/thermostat?format=json&body={\"selection\":{\"selectionType\":\"registered\",\"selectionMatch\":\"\",\"includeRuntime\":true,\"includeSensors\":true,\"includeSettings\":true}}", nil)
+
 	if err != nil {
 		log.Panicln(err)
 	}
@@ -134,6 +169,7 @@ func fetchTemostatJason() []byte {
 		log.Println("Error while reading the response bytes:", err)
 	}
 	//res := string([]byte(body))
+	//fmt.Printf("%+v\n", string([]byte(body)))
 	res := []byte(body)
 
 	return res
@@ -176,8 +212,6 @@ func getToken() {
 	}
 
 	authData := postReq(AUTH_URL, data)
-	fmt.Println("AAA", authData)
-	fmt.Println("AAA", authData["error"])
 
 	if authData["error"] != nil {
 		log.Println("Error: " + authData["error"].(string))
@@ -188,7 +222,6 @@ func getToken() {
 			//This is the case that app is registered but token is lost. we need to start over
 			log.Println("The Key has expiered. Whta to do?")
 			deleteFile(authFile)
-			//getAuth()
 
 		} else if authData["error"] == "invalid_client" {
 			log.Println("the token and app wont match")
@@ -200,7 +233,6 @@ func getToken() {
 			fmt.Println("- Navigate to: MyApps --> Add Apps")
 			fmt.Println("- Enter the code: " + ecobeePin)
 			fmt.Println("- Click Validate")
-			//fmt.Println("- Please login to: https://www.ecobee.com/consumerportal/index.html#/my-apps/add/newv")
 		}
 	} else {
 		accessToken = authData["access_token"].(string)
@@ -222,7 +254,6 @@ func getReq(url string) string {
 	}
 	//Convert the body to type string
 	sb := string(body)
-	log.Printf(sb)
 
 	return sb
 }
@@ -254,7 +285,6 @@ func deleteFile(path string) {
 	if isError(err) {
 		return
 	}
-
 	log.Println("File Deleted")
 }
 
@@ -262,7 +292,6 @@ func isError(err error) bool {
 	if err != nil {
 		fmt.Println(err.Error())
 	}
-
 	return (err != nil)
 }
 
@@ -284,9 +313,7 @@ func getAuth() {
 
 	fmt.Println("ecobee PIN: " + authObj.EcobeePin)
 	fmt.Println("Ecobee Auth Code: " + authObj.Code)
-	//fmt.Println(fmt.Sprint("Ecobee Exipery Inteval: ", pinObj.Interval))
-	//fmt.Println(fmt.Sprint("Ecobee Expiery in Sec: ", pinObj.Expires_in))
-	//fmt.Println("Call Scope" + pinObj.Scope)
+
 	ecobeePin = authObj.EcobeePin
 	authCode = authObj.Code
 	writeFile(authFile, "AUTH_CODE="+authCode+"\nECOBEE_PIN="+ecobeePin)
@@ -358,8 +385,7 @@ func initilize() {
 	setupAuth()
 	setupToken()
 	refreshAccessToken()
-	printAuthValues()
-
+	//printAuthValues()
 }
 
 func setupAuth() {
@@ -376,7 +402,6 @@ func setupToken() {
 		log.Println("Token File does not exist it should be created.")
 		getToken()
 	} else {
-		log.Println("TODO: process the token file")
 		loadTokenFile()
 	}
 }
@@ -448,7 +473,123 @@ type EcobeeThermostatData struct {
 		Lastmodified   string `json:"lastModified"`
 		Thermostattime string `json:"thermostatTime"`
 		Utctime        string `json:"utcTime"`
-		Runtime        struct {
+		Settings       struct {
+			Hvacmode                            string `json:"hvacMode"`
+			Lastservicedate                     string `json:"lastServiceDate"`
+			Serviceremindme                     bool   `json:"serviceRemindMe"`
+			Monthsbetweenservice                int    `json:"monthsBetweenService"`
+			Remindmedate                        string `json:"remindMeDate"`
+			Vent                                string `json:"vent"`
+			Ventilatorminontime                 int    `json:"ventilatorMinOnTime"`
+			Serviceremindtechnician             bool   `json:"serviceRemindTechnician"`
+			Eilocation                          string `json:"eiLocation"`
+			Coldtempalert                       int    `json:"coldTempAlert"`
+			Coldtempalertenabled                bool   `json:"coldTempAlertEnabled"`
+			Hottempalert                        int    `json:"hotTempAlert"`
+			Hottempalertenabled                 bool   `json:"hotTempAlertEnabled"`
+			Coolstages                          int    `json:"coolStages"`
+			Heatstages                          int    `json:"heatStages"`
+			Maxsetback                          int    `json:"maxSetBack"`
+			Maxsetforward                       int    `json:"maxSetForward"`
+			Quicksavesetback                    int    `json:"quickSaveSetBack"`
+			Quicksavesetforward                 int    `json:"quickSaveSetForward"`
+			Hasheatpump                         bool   `json:"hasHeatPump"`
+			Hasforcedair                        bool   `json:"hasForcedAir"`
+			Hasboiler                           bool   `json:"hasBoiler"`
+			Hashumidifier                       bool   `json:"hasHumidifier"`
+			Haserv                              bool   `json:"hasErv"`
+			Hashrv                              bool   `json:"hasHrv"`
+			Condensationavoid                   bool   `json:"condensationAvoid"`
+			Usecelsius                          bool   `json:"useCelsius"`
+			Usetimeformat12                     bool   `json:"useTimeFormat12"`
+			Locale                              string `json:"locale"`
+			Humidity                            string `json:"humidity"`
+			Humidifiermode                      string `json:"humidifierMode"`
+			Backlightonintensity                int    `json:"backlightOnIntensity"`
+			Backlightsleepintensity             int    `json:"backlightSleepIntensity"`
+			Backlightofftime                    int    `json:"backlightOffTime"`
+			Soundtickvolume                     int    `json:"soundTickVolume"`
+			Soundalertvolume                    int    `json:"soundAlertVolume"`
+			Compressorprotectionmintime         int    `json:"compressorProtectionMinTime"`
+			Compressorprotectionmintemp         int    `json:"compressorProtectionMinTemp"`
+			Stage1Heatingdifferentialtemp       int    `json:"stage1HeatingDifferentialTemp"`
+			Stage1Coolingdifferentialtemp       int    `json:"stage1CoolingDifferentialTemp"`
+			Stage1Heatingdissipationtime        int    `json:"stage1HeatingDissipationTime"`
+			Stage1Coolingdissipationtime        int    `json:"stage1CoolingDissipationTime"`
+			Heatpumpreversaloncool              bool   `json:"heatPumpReversalOnCool"`
+			Fancontrolrequired                  bool   `json:"fanControlRequired"`
+			Fanminontime                        int    `json:"fanMinOnTime"`
+			Heatcoolmindelta                    int    `json:"heatCoolMinDelta"`
+			Tempcorrection                      int    `json:"tempCorrection"`
+			Holdaction                          string `json:"holdAction"`
+			Heatpumpgroundwater                 bool   `json:"heatPumpGroundWater"`
+			Haselectric                         bool   `json:"hasElectric"`
+			Hasdehumidifier                     bool   `json:"hasDehumidifier"`
+			Dehumidifiermode                    string `json:"dehumidifierMode"`
+			Dehumidifierlevel                   int    `json:"dehumidifierLevel"`
+			Dehumidifywithac                    bool   `json:"dehumidifyWithAC"`
+			Dehumidifyovercooloffset            int    `json:"dehumidifyOvercoolOffset"`
+			Autoheatcoolfeatureenabled          bool   `json:"autoHeatCoolFeatureEnabled"`
+			Wifiofflinealert                    bool   `json:"wifiOfflineAlert"`
+			Heatmintemp                         int    `json:"heatMinTemp"`
+			Heatmaxtemp                         int    `json:"heatMaxTemp"`
+			Coolmintemp                         int    `json:"coolMinTemp"`
+			Coolmaxtemp                         int    `json:"coolMaxTemp"`
+			Heatrangehigh                       int    `json:"heatRangeHigh"`
+			Heatrangelow                        int    `json:"heatRangeLow"`
+			Coolrangehigh                       int    `json:"coolRangeHigh"`
+			Coolrangelow                        int    `json:"coolRangeLow"`
+			Useraccesscode                      string `json:"userAccessCode"`
+			Useraccesssetting                   int    `json:"userAccessSetting"`
+			Auxruntimealert                     int    `json:"auxRuntimeAlert"`
+			Auxoutdoortempalert                 int    `json:"auxOutdoorTempAlert"`
+			Auxmaxoutdoortemp                   int    `json:"auxMaxOutdoorTemp"`
+			Auxruntimealertnotify               bool   `json:"auxRuntimeAlertNotify"`
+			Auxoutdoortempalertnotify           bool   `json:"auxOutdoorTempAlertNotify"`
+			Auxruntimealertnotifytechnician     bool   `json:"auxRuntimeAlertNotifyTechnician"`
+			Auxoutdoortempalertnotifytechnician bool   `json:"auxOutdoorTempAlertNotifyTechnician"`
+			Disablepreheating                   bool   `json:"disablePreHeating"`
+			Disableprecooling                   bool   `json:"disablePreCooling"`
+			Installercoderequired               bool   `json:"installerCodeRequired"`
+			Draccept                            string `json:"drAccept"`
+			Isrentalproperty                    bool   `json:"isRentalProperty"`
+			Usezonecontroller                   bool   `json:"useZoneController"`
+			Randomstartdelaycool                int    `json:"randomStartDelayCool"`
+			Randomstartdelayheat                int    `json:"randomStartDelayHeat"`
+			Humidityhighalert                   int    `json:"humidityHighAlert"`
+			Humiditylowalert                    int    `json:"humidityLowAlert"`
+			Disableheatpumpalerts               bool   `json:"disableHeatPumpAlerts"`
+			Disablealertsonidt                  bool   `json:"disableAlertsOnIdt"`
+			Humidityalertnotify                 bool   `json:"humidityAlertNotify"`
+			Humidityalertnotifytechnician       bool   `json:"humidityAlertNotifyTechnician"`
+			Tempalertnotify                     bool   `json:"tempAlertNotify"`
+			Tempalertnotifytechnician           bool   `json:"tempAlertNotifyTechnician"`
+			Monthlyelectricitybilllimit         int    `json:"monthlyElectricityBillLimit"`
+			Enableelectricitybillalert          bool   `json:"enableElectricityBillAlert"`
+			Enableprojectedelectricitybillalert bool   `json:"enableProjectedElectricityBillAlert"`
+			Electricitybillingdayofmonth        int    `json:"electricityBillingDayOfMonth"`
+			Electricitybillcyclemonths          int    `json:"electricityBillCycleMonths"`
+			Electricitybillstartmonth           int    `json:"electricityBillStartMonth"`
+			Ventilatorminontimehome             int    `json:"ventilatorMinOnTimeHome"`
+			Ventilatorminontimeaway             int    `json:"ventilatorMinOnTimeAway"`
+			Backlightoffduringsleep             bool   `json:"backlightOffDuringSleep"`
+			Autoaway                            bool   `json:"autoAway"`
+			Smartcirculation                    bool   `json:"smartCirculation"`
+			Followmecomfort                     bool   `json:"followMeComfort"`
+			Ventilatortype                      string `json:"ventilatorType"`
+			Isventilatortimeron                 bool   `json:"isVentilatorTimerOn"`
+			Ventilatoroffdatetime               string `json:"ventilatorOffDateTime"`
+			Hasuvfilter                         bool   `json:"hasUVFilter"`
+			Coolinglockout                      bool   `json:"coolingLockout"`
+			Ventilatorfreecooling               bool   `json:"ventilatorFreeCooling"`
+			Dehumidifywhenheating               bool   `json:"dehumidifyWhenHeating"`
+			Ventilatordehumidify                bool   `json:"ventilatorDehumidify"`
+			Groupref                            string `json:"groupRef"`
+			Groupname                           string `json:"groupName"`
+			Groupsetting                        int    `json:"groupSetting"`
+			Fanspeed                            string `json:"fanSpeed"`
+		} `json:"settings"`
+		Runtime struct {
 			Runtimerev         string `json:"runtimeRev"`
 			Connected          bool   `json:"connected"`
 			Firstconnected     string `json:"firstConnected"`
@@ -491,11 +632,12 @@ type EcobeeThermostatData struct {
 
 type Room struct {
 	Name               string
+	Temprature         float64
+	Humidity           int
 	ControlledRegister bool
-	sensorData         struct {
-		Name           string
-		Temprature     float64
-		Humidity       int
-		ThermostatName string
-	}
+	RegisterOpen       bool
+	DesiredTemrature   float64
+	hvacMode           string
+	SensorID           string
+	SensorName         string
 }
