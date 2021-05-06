@@ -34,10 +34,7 @@ var err error
 func main() {
 	fmt.Println("------------------------------")
 	fmt.Println("------------------------------")
-	fmt.Println("------------------------------")
-	fmt.Println("------------------------------")
-	fmt.Println("------------------------------")
-	fmt.Println("------------------------------")
+
 	log.Println("Starting Zone Split")
 
 	initilize()
@@ -51,31 +48,34 @@ func main() {
 	room["Upstairs"] = temRoom
 
 	fmt.Printf("%+v\n", room)
-	html := ""
+
 	for key, element := range room {
 		if element.ControlledRegister {
-			if element.hvacMode == "heat" {
-				if element.Temprature < element.DesiredTemrature {
-					element.RegisterOpen = true
-				} else {
-					element.RegisterOpen = false
-				}
-			} else if element.hvacMode == "cool" {
-				if element.Temprature > element.DesiredTemrature {
-					element.RegisterOpen = true
-				} else {
-					element.RegisterOpen = false
-				}
+			if element.hvacMode == "off" {
+				element.RegisterOpen = true
+				fmt.Printf("The room %s's vent(s) is %s. Tempreture is %gF with thermostat off\n", key, "open", element.Temprature)
 			} else {
-				fmt.Printf("cold not undrestand hvac mode: %s\n", element.hvacMode)
+				if element.hvacMode == "heat" {
+					if element.Temprature < element.DesiredTemrature {
+						element.RegisterOpen = true
+					} else {
+						element.RegisterOpen = false
+					}
+				} else if element.hvacMode == "cool" {
+					if element.Temprature > element.DesiredTemrature {
+						element.RegisterOpen = true
+					} else {
+						element.RegisterOpen = false
+					}
+				} else {
+					fmt.Printf("cold not undrestand hvac mode: %s\n", element.hvacMode)
+				}
+				oc := "closed"
+				if element.ControlledRegister && element.RegisterOpen {
+					oc = "open"
+				}
+				fmt.Printf("The room %s's vent(s) is %s. Tempreture is %gF --> %gF\n", key, oc, element.Temprature, element.DesiredTemrature)
 			}
-			oc := "closed"
-			if element.ControlledRegister && element.RegisterOpen {
-				oc = "open"
-			}
-			fmt.Printf("The room %s's vent(s) is %s. Tempreture is %gF --> %gF\n", key, oc, element.Temprature, element.DesiredTemrature)
-			//html = html + "The room " + key + "'s vent(s) is " + oc + ". Tempreture is " + element.Temprature + "F --> " + element.DesiredTemrature + "F\n</BR>"
-
 		}
 	}
 	fmt.Println("---------------------------------------------")
